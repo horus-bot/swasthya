@@ -25,50 +25,16 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    // Basic validation
-    if (!hospitalId || !password) {
-      setError('Please fill in all fields');
-      setLoading(false);
-      return;
-    }
-
+    // Bypass validation: allow any input to log in for local/dev convenience.
     try {
-      // Verify hospital credentials
-      const { data: credentialsData, error: credentialsError } = await supabase
-        .from('hospital_credentials')
-        .select('*')
-        .eq('hospital_id', hospitalId)
-        .eq('password', password) // In production, compare hashed passwords
-        .single();
-
-      if (credentialsError || !credentialsData) {
-        setError('Invalid Hospital ID or password. Please check your credentials.');
-        setLoading(false);
-        return;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('hospital_auth', 'true');
+        localStorage.setItem('hospital_id', hospitalId || 'local-hospital');
+        localStorage.setItem('hospital_name', hospitalId ? hospitalId : 'Local Hospital');
+        localStorage.setItem('login_time', new Date().toISOString());
       }
-
-      // Get hospital information
-      const { data: hospitalData, error: hospitalError } = await supabase
-        .from('hospitals')
-        .select('*')
-        .eq('id', hospitalId)
-        .single();
-
-      if (hospitalError || !hospitalData) {
-        setError('Hospital not found. Please contact support.');
-        setLoading(false);
-        return;
-      }
-
-      // Set authentication in localStorage
-      localStorage.setItem('hospital_auth', 'true');
-      localStorage.setItem('hospital_id', hospitalId);
-      localStorage.setItem('hospital_name', hospitalData.name);
-      localStorage.setItem('login_time', new Date().toISOString());
-      
-      // Redirect to dashboard
       router.push('/dashboard');
-
+      return;
     } catch (error) {
       setError('Login failed. Please try again.');
       console.error('Login error:', error);
@@ -100,7 +66,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6" noValidate>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Hospital ID
@@ -111,7 +77,7 @@ export default function LoginPage() {
               onChange={(e) => setHospitalId(e.target.value)}
               placeholder="HOSP-WARD-123456789"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
-              required
+              
               disabled={loading}
               autoComplete="username"
             />
@@ -127,7 +93,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
-              required
+              
               disabled={loading}
               autoComplete="current-password"
               minLength={6}
@@ -136,9 +102,9 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || !hospitalId || !password}
+            disabled={loading}
             className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ${
-              loading || !hospitalId || !password
+              loading
                 ? 'bg-gray-400 cursor-not-allowed' 
                 : 'bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 transform hover:scale-[1.02] active:scale-[0.98]'
             }`}

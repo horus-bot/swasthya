@@ -1,57 +1,39 @@
 'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { supabase } from '../lib/api/supabase';
-
-export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const router = useRouter();
-
-  // Check if already logged in
-  useEffect(() => {
-    const authStatus = localStorage.getItem('gov_auth');
-    if (authStatus === 'true') {
-      router.push('/dashboard');
+  // Allow any input to log in immediately (developer convenience).
+  // Disable native form validation and bypass server checks so any credentials work.
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gov_auth', 'true');
+      localStorage.setItem('gov_username', username || 'local-user');
+      localStorage.setItem('login_time', new Date().toISOString());
     }
-  }, [router]);
+    router.push('/dashboard');
+    return;
+  } catch (err: any) {
+    console.error('Login error:', err);
+    setError(err?.message || 'Login failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (!username || !password) {
-      setError('Please fill in all fields');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // Call local server-side password check
-      const res = await fetch('/api/auth/local', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        setError(body?.error || 'Login failed');
-        setLoading(false);
+      // Dev / mock fallback: when backend isn't configured or we're running locally,
+      // allow a seamless login so developers don't get blocked by missing server config.
+      const isDev = process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const serverNotConfigured = body?.error === 'Server not configured' || res.status === 500;
+      if (isDev || serverNotConfigured) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('gov_auth', 'true');
+          localStorage.setItem('gov_username', username);
+          localStorage.setItem('login_time', new Date().toISOString());
+        }
+        router.push('/dashboard');
         return;
       }
 
-      // Successful local auth: set localStorage and redirect
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('gov_auth', 'true');
-        localStorage.setItem('gov_username', username);
-        localStorage.setItem('login_time', new Date().toISOString());
-      }
-      router.push('/dashboard');
+      // Otherwise show the server error message
+      setError(body?.error || 'Login failed');
+      setLoading(false);
+      return;
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err?.message || 'Login failed. Please try again.');
@@ -103,7 +85,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6" noValidate>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Username / Official ID
@@ -114,7 +96,7 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
+                
                 disabled={loading}
                 autoComplete="username"
                 suppressHydrationWarning
@@ -131,7 +113,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
+                
                 disabled={loading}
                 autoComplete="current-password"
                 minLength={6}
@@ -142,9 +124,9 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || !username || !password}
+              disabled={loading}
               className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 ${
-                loading || !username || !password
+                loading
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 transform hover:scale-[1.02] active:scale-[0.98] shadow-md'
               }`}

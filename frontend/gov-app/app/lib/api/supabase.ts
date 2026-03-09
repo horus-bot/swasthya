@@ -122,6 +122,20 @@ const supabase = {
     signInWithPassword: async (_: { email: string; password: string }) => ({ data: null, error: { message: 'Auth not available in mock' } }),
     signOut: async () => ({ error: { message: 'Auth not available in mock' } }),
     onAuthStateChange: (_cb: any) => ({ data: null, subscription: { unsubscribe: () => {} } }),
+    // Return a session-like object to match Supabase client API
+    getSession: async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const logged = localStorage.getItem('gov_auth') === 'true';
+          const username = localStorage.getItem('gov_username') || null;
+          const session = logged ? { user: { id: username, email: null }, expires_at: null } : null;
+          return { data: { session }, error: null };
+        }
+      } catch (err) {
+        // ignore
+      }
+      return { data: { session: null }, error: null };
+    },
   },
 };
 
