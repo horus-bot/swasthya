@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { AlertTriangle, Bell, CheckCircle2, Info, ShieldCheck, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -11,48 +11,41 @@ import { useGsapContext } from "@/hooks/useGsapContext";
 type AlertTone = "critical" | "safe" | "info";
 type AlertFilter = "all" | AlertTone;
 
-const alertFeed: Array<{
+interface AlertItem {
   id: string;
   type: AlertTone;
   title: string;
   message: string;
   time: string;
-}> = [
-  {
-    id: "high-bp",
-    type: "critical",
-    title: "High BP Alert",
-    message: "Patient #4092 (Ramesh K.) detected with 180/110 mmHg. Immediate follow-up required.",
-    time: "12m ago",
-  },
-  {
-    id: "low-stock",
-    type: "critical",
-    title: "Low Inventory",
-    message: "Glucometer strips running low at Camp Sector 14. Remaining: 12.",
-    time: "45m ago",
-  },
-  {
-    id: "sync-success",
-    type: "safe",
-    title: "Data Sync Successful",
-    message: "All offline records from yesterday were uploaded to the central server.",
-    time: "2h ago",
-  },
-  {
-    id: "shift-assignment",
-    type: "info",
-    title: "Shift Assignment",
-    message: "You have been assigned to Mobile Unit 02 for tomorrow's maternal health route.",
-    time: "5h ago",
-  },
-  {
-    id: "system-update",
-    type: "info",
-    title: "System Update",
-    message: "App maintenance is scheduled for tonight at 02:00 AM.",
-    time: "1d ago",
-  },
+}
+
+// Map notification_types to AlertTone
+function mapTypeName(typeName: string | undefined): AlertTone {
+  if (!typeName) return "info";
+  const lower = typeName.toLowerCase();
+  if (lower.includes("critical") || lower.includes("alert") || lower.includes("urgent")) return "critical";
+  if (lower.includes("resolved") || lower.includes("success") || lower.includes("safe")) return "safe";
+  return "info";
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+// Static fallback for when DB is empty
+const fallbackAlerts: AlertItem[] = [
+  { id: "high-bp", type: "critical", title: "High BP Alert", message: "Patient #4092 (Ramesh K.) detected with 180/110 mmHg. Immediate follow-up required.", time: "12m ago" },
+  { id: "low-stock", type: "critical", title: "Low Inventory", message: "Glucometer strips running low at Camp Sector 14. Remaining: 12.", time: "45m ago" },
+  { id: "sync-success", type: "safe", title: "Data Sync Successful", message: "All offline records from yesterday were uploaded to the central server.", time: "2h ago" },
+  { id: "shift-assignment", type: "info", title: "Shift Assignment", message: "You have been assigned to Mobile Unit 02 for tomorrow's maternal health route.", time: "5h ago" },
+  { id: "system-update", type: "info", title: "System Update", message: "App maintenance is scheduled for tonight at 02:00 AM.", time: "1d ago" },
 ];
 
 const filters: Array<{ id: AlertFilter; label: string }> = [
@@ -65,6 +58,31 @@ const filters: Array<{ id: AlertFilter; label: string }> = [
 export default function AlertsPage() {
   const scopeRef = useRef<HTMLDivElement | null>(null);
   const [activeFilter, setActiveFilter] = useState<AlertFilter>("all");
+  const [alertFeed, setAlertFeed] = useState<AlertItem[]>(fallbackAlerts);
+
+  // Fetch notifications from API
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/notifications");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setAlertFeed(
+            data.map((n: any) => ({
+              id: n.id,
+              type: mapTypeName(n.notification_types?.type_name),
+              title: n.title || "Notification",
+              message: n.message || "",
+              time: timeAgo(n.created_at),
+            }))
+          );
+        }
+      } catch {
+        // keep fallback data on failure
+      }
+    })();
+  }, []);
 
   const filteredAlerts = useMemo(() => {
     if (activeFilter === "all") {
@@ -72,7 +90,7 @@ export default function AlertsPage() {
     }
 
     return alertFeed.filter((alert) => alert.type === activeFilter);
-  }, [activeFilter]);
+  }, [activeFilter, alertFeed]);
 
   useGsapContext(
     scopeRef,

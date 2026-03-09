@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { Calendar, Clock, MapPin, Navigation, Tent, Users, type LucideIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -16,76 +16,71 @@ const filters: Array<{ id: CampFilter; label: string }> = [
     { id: "completed", label: "Completed" },
 ];
 
-const campData = [
-    {
-        id: "sector-14",
-        bucket: "today",
-        name: "Sector 14 Community Hall",
-        location: "Sector 14, Block B, Near Market",
-        date: "Today",
-        time: "09:00 AM - 02:00 PM",
-        type: "General Health & Eye Checkup",
-        patients: 45,
-        status: "Active",
-        statusColor: "#15803d",
-        statusBg: "#f0fdf4",
-        note: "Two field workers are on queue control and one retina screening station is available.",
-    },
-    {
-        id: "badli-school",
-        bucket: "today",
-        name: "Govt. Primary School",
-        location: "Village Badli, District 4",
-        date: "Today",
-        time: "10:00 AM - 04:00 PM",
-        type: "Maternal Health Screening",
-        patients: 72,
-        status: "Closing Soon",
-        statusColor: "#b45309",
-        statusBg: "#fffbeb",
-        note: "Final vaccination check is scheduled for the closing hour. Supplies remain stable.",
-    },
-    {
-        id: "railway-colony",
-        bucket: "upcoming",
-        name: "Railway Colony Center",
-        location: "East Zone, Station Road",
-        date: "Tomorrow",
-        time: "09:00 AM",
-        type: "Diabetes Awareness Camp",
-        patients: 0,
-        status: "Scheduled",
-        statusColor: "#1d4ed8",
-        statusBg: "#eff6ff",
-        note: "The local ASHA team will arrive before the mobile unit for setup and registration.",
-    },
-    {
-        id: "ward-6",
-        bucket: "completed",
-        name: "Ward 6 Community Center",
-        location: "West District, Ward 6",
-        date: "Yesterday",
-        time: "08:30 AM - 01:00 PM",
-        type: "Hypertension Screening",
-        patients: 58,
-        status: "Completed",
-        statusColor: "#0f9d8a",
-        statusBg: "#e7fbf7",
-        note: "Screening data synced successfully and all follow-up cases were assigned before wrap-up.",
-    },
-] as const;
+const statusMap: Record<string, { label: string; color: string; bg: string }> = {
+  active: { label: "Active", color: "#15803d", bg: "#f0fdf4" },
+  closing_soon: { label: "Closing Soon", color: "#b45309", bg: "#fffbeb" },
+  scheduled: { label: "Scheduled", color: "#1d4ed8", bg: "#eff6ff" },
+  completed: { label: "Completed", color: "#0f9d8a", bg: "#e7fbf7" },
+  cancelled: { label: "Cancelled", color: "#b91c1c", bg: "#fef2f2" },
+};
+
+function dateBucket(campDate: string): "today" | "upcoming" | "completed" {
+  const today = new Date().toISOString().split("T")[0];
+  if (campDate === today) return "today";
+  if (campDate > today) return "upcoming";
+  return "completed";
+}
+
+function formatDate(campDate: string): string {
+  const today = new Date().toISOString().split("T")[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  if (campDate === today) return "Today";
+  if (campDate === tomorrow) return "Tomorrow";
+  if (campDate === yesterday) return "Yesterday";
+  return new Date(campDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+}
+
+// Fallback data for offline / no DB rows
+const fallbackCamps = [
+    { id: "sector-14", name: "Sector 14 Community Hall", location: "Sector 14, Block B, Near Market", camp_date: new Date().toISOString().split("T")[0], start_time: "09:00", end_time: "14:00", camp_type: "General Health & Eye Checkup", patient_count: 45, status: "active", notes: "Two field workers are on queue control and one retina screening station is available." },
+    { id: "badli-school", name: "Govt. Primary School", location: "Village Badli, District 4", camp_date: new Date().toISOString().split("T")[0], start_time: "10:00", end_time: "16:00", camp_type: "Maternal Health Screening", patient_count: 72, status: "closing_soon", notes: "Final vaccination check is scheduled for the closing hour. Supplies remain stable." },
+    { id: "railway-colony", name: "Railway Colony Center", location: "East Zone, Station Road", camp_date: new Date(Date.now() + 86400000).toISOString().split("T")[0], start_time: "09:00", end_time: null, camp_type: "Diabetes Awareness Camp", patient_count: 0, status: "scheduled", notes: "The local ASHA team will arrive before the mobile unit for setup and registration." },
+    { id: "ward-6", name: "Ward 6 Community Center", location: "West District, Ward 6", camp_date: new Date(Date.now() - 86400000).toISOString().split("T")[0], start_time: "08:30", end_time: "13:00", camp_type: "Hypertension Screening", patient_count: 58, status: "completed", notes: "Screening data synced successfully and all follow-up cases were assigned before wrap-up." },
+];
 
 export default function CampsPage() {
     const scopeRef = useRef<HTMLDivElement | null>(null);
     const [activeFilter, setActiveFilter] = useState<CampFilter>("today");
+    const [campData, setCampData] = useState<any[]>(fallbackCamps);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch("/api/camps");
+                if (!res.ok) return;
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) setCampData(data);
+            } catch { /* keep fallback */ }
+        })();
+    }, []);
 
     const visibleCamps = useMemo(() => {
-        if (activeFilter === "all") {
-            return campData;
-        }
-
-        return campData.filter((camp) => camp.bucket === activeFilter);
-    }, [activeFilter]);
+        const mapped = campData.map((c) => ({
+            ...c,
+            bucket: c.bucket || dateBucket(c.camp_date),
+            date: c.date || formatDate(c.camp_date),
+            time: c.time || `${c.start_time?.slice(0, 5)} ${c.end_time ? "- " + c.end_time.slice(0, 5) : ""}`.trim(),
+            type: c.type || c.camp_type,
+            patients: c.patients ?? c.patient_count ?? 0,
+            statusColor: (statusMap[c.status] || statusMap.scheduled).color,
+            statusBg: (statusMap[c.status] || statusMap.scheduled).bg,
+            statusLabel: (statusMap[c.status] || statusMap.scheduled).label,
+            note: c.note || c.notes || "",
+        }));
+        if (activeFilter === "all") return mapped;
+        return mapped.filter((camp) => camp.bucket === activeFilter);
+    }, [activeFilter, campData]);
 
     useGsapContext(
         scopeRef,
@@ -99,7 +94,13 @@ export default function CampsPage() {
         [activeFilter]
     );
 
-    const liveCount = campData.filter((camp) => camp.bucket === "today").length;
+    const liveCount = campData.filter((camp) => {
+        const b = camp.bucket || dateBucket(camp.camp_date);
+        return b === "today";
+    }).length;
+    const totalPatients = campData
+        .filter((c) => ["active", "closing_soon"].includes(c.status))
+        .reduce((sum, c) => sum + (c.patient_count ?? c.patients ?? 0), 0);
 
     return (
         <div ref={scopeRef} className="page-wrap page-stack">
@@ -112,7 +113,7 @@ export default function CampsPage() {
 
             <section className="dashboard-grid">
                 <SummaryCampCard label="Live today" value={String(liveCount)} copy="Routes that are actively screening patients right now." icon={Tent} />
-                <SummaryCampCard label="Patients in queue" value="117" copy="Estimated waiting load across the active camp network." icon={Users} />
+                <SummaryCampCard label="Patients in queue" value={String(totalPatients)} copy="Estimated waiting load across the active camp network." icon={Users} />
                 <SummaryCampCard label="Next setup" value="09:00 AM" copy="Railway Colony team briefing and deployment start time." icon={Calendar} />
             </section>
 
@@ -134,8 +135,8 @@ export default function CampsPage() {
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    {visibleCamps.map((camp) => (
-                        <CampCard key={camp.id} {...camp} />
+                    {visibleCamps.map((camp: any) => (
+                        <CampCard key={camp.id} name={camp.name} location={camp.location} date={camp.date} time={camp.time} type={camp.type} patients={camp.patients} status={camp.statusLabel || camp.status} statusColor={camp.statusColor} statusBg={camp.statusBg} note={camp.note} />
                     ))}
                 </div>
             </section>

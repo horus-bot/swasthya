@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import {
@@ -99,6 +99,56 @@ const units = [
 
 export default function DashboardPage() {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [stats, setStats] = useState({
+    appointments_today: 0,
+    total_users: 0,
+    active_camps: 0,
+    high_risk_cases: 0,
+    active_units: 0,
+    today_camps: [] as any[],
+    unread_notifications: 0,
+  });
+  const [liveUnits, setLiveUnits] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [statsRes, unitsRes] = await Promise.all([
+          fetch("/api/dashboard/stats"),
+          fetch("/api/mobile-units"),
+        ]);
+        if (statsRes.ok) setStats(await statsRes.json());
+        if (unitsRes.ok) {
+          const data = await unitsRes.json();
+          if (Array.isArray(data) && data.length > 0) setLiveUnits(data);
+        }
+      } catch { /* use defaults */ }
+    })();
+  }, []);
+
+  const kpiData = [
+    { title: "Today's Visits", value: String(stats.appointments_today || kpis[0].value), icon: Users, trend: "+12%", trendUp: true },
+    { title: "High-Risk Cases", value: String(stats.high_risk_cases || kpis[1].value), icon: Activity, alert: true },
+    { title: "Active Camps", value: String(stats.active_camps || kpis[2].value), icon: Tent, trend: "+1", trendUp: true },
+    { title: "Offline Records", value: "15", icon: WifiOff, trend: "Sync due", trendUp: false },
+  ];
+
+  const liveCampSchedule = stats.today_camps.length > 0
+    ? stats.today_camps.map((c: any) => ({
+        name: c.name,
+        type: c.camp_type,
+        patients: c.patient_count,
+        time: `${c.start_time?.slice(0, 5)}${c.end_time ? " - " + c.end_time.slice(0, 5) : ""}`,
+      }))
+    : campSchedule;
+
+  const liveUnitsList = liveUnits.length > 0
+    ? liveUnits.map((u: any) => ({
+        id: u.unit_code,
+        status: u.status === "en_route" ? "En Route" : u.status === "active" ? "Active" : "Standby",
+        location: u.location || "Unknown",
+      }))
+    : units;
 
   useGsapContext(
     containerRef,
@@ -195,7 +245,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="dashboard-grid">
-        {kpis.map((kpi) => (
+        {kpiData.map((kpi) => (
           <StatCard key={kpi.title} {...kpi} />
         ))}
       </section>
@@ -251,7 +301,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid-auto">
-            {campSchedule.map((camp) => (
+            {liveCampSchedule.map((camp: any) => (
               <CampRow key={camp.name} {...camp} />
             ))}
           </div>
@@ -266,7 +316,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid-auto">
-            {units.map((unit) => (
+            {liveUnitsList.map((unit: any) => (
               <UnitCard key={unit.id} {...unit} />
             ))}
           </div>

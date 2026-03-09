@@ -1,9 +1,36 @@
 "use client";
+import { useEffect, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Truck, MapPin, Signal } from "lucide-react";
 import { theme } from "@/lib/theme";
 
+const fallbackUnits = [
+  { unit_code: "MHU-01", driver_name: "Rajesh Kumar", location: "En route to Sector 14", eta: "15 mins", status: "en_route", gps_status: "online", fuel_percentage: 75 },
+  { unit_code: "MHU-02", driver_name: "Sunita Devi", location: "Base Station (Main Hospital)", eta: null, status: "standby", gps_status: "online", fuel_percentage: 75 },
+  { unit_code: "MHU-03", driver_name: "Vikram Singh", location: "Village Badli", eta: null, status: "active", gps_status: "online", fuel_percentage: 75 },
+];
+
+const statusLabels: Record<string, string> = {
+  active: "Active",
+  en_route: "En Route",
+  standby: "Standby",
+  maintenance: "Maintenance",
+};
+
 export default function MobileUnitsPage() {
+  const [units, setUnits] = useState<any[]>(fallbackUnits);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/mobile-units");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) setUnits(data);
+      } catch { /* keep fallback */ }
+    })();
+  }, []);
+
   return (
     <div style={{ padding: '16px 24px', maxWidth: '1200px', margin: '0 auto' }}>
       <PageHeader title="Mobile Health Units" subtitle="Track deployment and status of mobile clinics." />
@@ -21,32 +48,24 @@ export default function MobileUnitsPage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-         {/* Unit List */}
-         <UnitStatusCard 
-            id="MHU-01" 
-            driver="Rajesh Kumar" 
-            location="En route to Sector 14" 
-            eta="15 mins" 
-            status="En Route"
-         />
-          <UnitStatusCard 
-            id="MHU-02" 
-            driver="Sunita Devi" 
-            location="Base Station (Main Hospital)" 
-            status="Standby" 
-         />
-          <UnitStatusCard 
-            id="MHU-03" 
-            driver="Vikram Singh" 
-            location="Village Badli" 
-            status="Active" 
-         />
+         {units.map((u: any) => (
+           <UnitStatusCard
+             key={u.id || u.unit_code}
+             id={u.unit_code}
+             driver={u.driver_name}
+             location={u.location || "Unknown"}
+             eta={u.eta || undefined}
+             status={statusLabels[u.status] || u.status}
+             gpsStatus={u.gps_status || "online"}
+             fuel={u.fuel_percentage ?? 75}
+           />
+         ))}
       </div>
     </div>
   )
 }
 
-function UnitStatusCard({ id, driver, location, eta, status }: any) {
+function UnitStatusCard({ id, driver, location, eta, status, gpsStatus, fuel }: any) {
   const isMoving = status === "En Route";
   
   let statusBg = "#f1f5f9";
@@ -96,8 +115,8 @@ function UnitStatusCard({ id, driver, location, eta, status }: any) {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Signal size={12} /> GPS Online</span>
-            <span>Fuel: 75%</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Signal size={12} /> GPS {gpsStatus === "online" ? "Online" : "Offline"}</span>
+            <span>Fuel: {fuel}%</span>
         </div>
         
         <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>

@@ -101,7 +101,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
       </button>
 
       {isOpen && (
-        <div className="absolute top-[120%] right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-100 animate-in slide-in-from-top-2 duration-200 origin-top-right text-left">
+        <div className="absolute top-[120%] right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-[100] animate-in slide-in-from-top-2 duration-200 origin-top-right text-left">
           <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm">
             <h3 className="font-bold text-slate-800 text-sm tracking-wide">Notifications</h3>
             {unreadCount > 0 && (
@@ -118,7 +118,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
               <div className="flex flex-col">
                 {notifications.map((notif) => (
                   <div key={notif.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-colors flex gap-4 ${notif.isRead ? 'opacity-75' : 'bg-teal-50/20'}`}>
-                    <div className={`mt-0.5 h-9 w-9 rounded-full flex items-center justify-center shrink-0 ${notif.isRead ? 'bg-slate-100' : 'bg-white shadow-sm border border-slate-100'}`}>
+                    <div className={`mt-0.5 h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-slate-100' : 'bg-white shadow-sm border border-slate-100'}`}>
                       {getIcon(notif.type)}
                     </div>
                     <div className="flex-1">
@@ -129,7 +129,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
                       <p className="text-xs text-slate-500 leading-relaxed font-medium">{notif.message}</p>
                     </div>
                     {!notif.isRead && (
-                      <div className="w-2 h-2 bg-teal-500 rounded-full mt-2.5 shrink-0 shadow-sm shadow-teal-500/30"></div>
+                      <div className="w-2 h-2 bg-teal-500 rounded-full mt-2.5 flex-shrink-0 shadow-sm shadow-teal-500/30"></div>
                     )}
                   </div>
                 ))}
@@ -138,7 +138,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
           </div>
 
           <div className="p-3 border-t border-slate-100 bg-slate-50/50 text-center">
-            <Link href="/notification" onClick={() => setIsOpen(false)} className="text-[11px] font-black text-slate-500 hover:text-teal-600 transition-colors uppercase tracking-widest inline-flex items-center gap-1 active:scale-95">
+            <Link href="/notification" onClick={() => setIsOpen(false)} className="text-[11px] font-[900] text-slate-500 hover:text-teal-600 transition-colors uppercase tracking-widest inline-flex items-center gap-1 active:scale-95">
               View All History
             </Link>
           </div>

@@ -3,12 +3,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
-export const ImpactMetrics = () => {
-    const metrics = [
-        { label: 'Avg Travel Time', value: '21m', change: '-12%', trend: 'good' },
-        { label: 'Unserved Pop.', value: '8.4k', change: '-32%', trend: 'good' },
-        { label: 'Overload Risk', value: 'Medium', change: 'Stable', trend: 'neutral' },
-    ];
+export type ImpactMetric = {
+    label: string;
+    value: string;
+    change: string;
+    trend: 'good' | 'bad' | 'neutral';
+};
+
+interface ImpactMetricsProps {
+    metrics: ImpactMetric[];
+}
+
+export const ImpactMetrics: React.FC<ImpactMetricsProps> = ({ metrics }) => {
 
   return (
     <div className="space-y-3 mt-4">

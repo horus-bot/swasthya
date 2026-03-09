@@ -12,6 +12,7 @@ import {
   Activity,
   Save,
   ArrowLeft,
+  Loader2,
 } from "lucide-react";
 import { theme } from "@/lib/theme";
 
@@ -29,6 +30,8 @@ export default function PatientHealthRecordPage() {
     sugar: "",
     symptoms: "",
   });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     gsap.fromTo(
@@ -40,6 +43,51 @@ export default function PatientHealthRecordPage() {
 
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) { setError("Patient name is required"); return; }
+    setSaving(true);
+    setError(null);
+    try {
+      // 1. Create user record
+      const userRes = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          age: form.age ? parseInt(form.age) : null,
+          gender: form.gender || null,
+          phone: form.phone || null,
+        }),
+      });
+      if (!userRes.ok) throw new Error((await userRes.json()).error || "Failed to create patient");
+      const user = await userRes.json();
+
+      // 2. Create health record linked to user
+      const healthRes = await fetch(`/api/users/${user.id}/health-records`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blood_type: null,
+          allergies: form.symptoms || null,
+          bmi: null,
+          disabilities: null,
+          medical_history: [
+            form.bp ? `BP: ${form.bp}` : "",
+            form.sugar ? `Sugar: ${form.sugar}` : "",
+            form.location ? `Location: ${form.location}` : "",
+          ].filter(Boolean).join("; ") || null,
+        }),
+      });
+      if (!healthRes.ok) throw new Error((await healthRes.json()).error || "Failed to save health record");
+
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -174,19 +222,28 @@ export default function PatientHealthRecordPage() {
           />
         </Section>
 
+        {/* Error message */}
+        {error && (
+          <div style={{ padding: "12px 16px", borderRadius: theme.borderRadius.md, backgroundColor: "#fef2f2", color: "#b91c1c", fontSize: "14px", fontWeight: 600 }}>
+            {error}
+          </div>
+        )}
+
         {/* Actions */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-          <button onClick={() => router.back()} style={secondaryButton}>
+          <button onClick={() => router.back()} style={secondaryButton} disabled={saving}>
             Cancel
           </button>
 
           <button
-            style={primaryButton}
+            style={{ ...primaryButton, opacity: saving ? 0.7 : 1 }}
+            onClick={handleSave}
+            disabled={saving}
             onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.97)")}
             onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
           >
-            <Save size={18} />
-            Save Health Record
+            {saving ? <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> : <Save size={18} />}
+            {saving ? "Saving…" : "Save Health Record"}
           </button>
         </div>
       </div>

@@ -1,9 +1,45 @@
 "use client";
+import { useEffect, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Eye, Droplets, HeartPulse, Activity } from "lucide-react";
 import { theme } from "@/lib/theme";
 
+interface Screening {
+  id: string;
+  patient_name: string;
+  test_type: string;
+  result: string;
+  status: string;
+  screened_at: string;
+}
+
+function formatScreeningDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const today = new Date();
+  const isToday = d.toDateString() === today.toDateString();
+  const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  return isToday ? `Today, ${time}` : d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) + `, ${time}`;
+}
+
+const fallbackScreenings: Screening[] = [
+  { id: "1", patient_name: "Ramesh Kumar", test_type: "Retina Scan", result: "Mild NPDR detected", status: "flagged", screened_at: new Date(Date.now() - 7200000).toISOString() },
+  { id: "2", patient_name: "Sita Devi", test_type: "Blood Pressure", result: "120/80 mmHg", status: "normal", screened_at: new Date(Date.now() - 10800000).toISOString() },
+];
+
 export default function HealthCheckPage() {
+  const [screenings, setScreenings] = useState<Screening[]>(fallbackScreenings);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/screenings?limit=20");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) setScreenings(data);
+      } catch { /* keep fallback */ }
+    })();
+  }, []);
+
   const cardStyle = {
       backgroundColor: 'white',
       borderRadius: theme.borderRadius.xl,
@@ -74,20 +110,21 @@ export default function HealthCheckPage() {
                       </tr>
                   </thead>
                   <tbody>
-                      <tr>
-                          <td style={{ ...tableCellStyle, fontWeight: 500 }}>Ramesh Kumar</td>
-                          <td style={tableCellStyle}>Retina Scan</td>
-                          <td style={tableCellStyle}>Mild NPDR detected</td>
-                          <td style={{ ...tableCellStyle, color: '#64748b' }}>Today, 10:30 AM</td>
-                          <td style={tableCellStyle}><span style={{ fontSize: '12px', backgroundColor: '#fef2f2', color: '#b91c1c', padding: '4px 8px', borderRadius: '4px', fontWeight: 600 }}>Flagged</span></td>
-                      </tr>
-                      <tr>
-                          <td style={{ ...tableCellStyle, fontWeight: 500 }}>Sita Devi</td>
-                          <td style={tableCellStyle}>Blood Pressure</td>
-                          <td style={tableCellStyle}>120/80 mmHg</td>
-                          <td style={{ ...tableCellStyle, color: '#64748b' }}>Today, 09:15 AM</td>
-                          <td style={tableCellStyle}><span style={{ fontSize: '12px', backgroundColor: '#f0fdf4', color: '#15803d', padding: '4px 8px', borderRadius: '4px', fontWeight: 600 }}>Normal</span></td>
-                      </tr>
+                      {screenings.map((s) => {
+                        const statusStyles = s.status === "flagged" || s.status === "critical"
+                          ? { backgroundColor: '#fef2f2', color: '#b91c1c' }
+                          : { backgroundColor: '#f0fdf4', color: '#15803d' };
+                        const statusLabel = s.status === "flagged" ? "Flagged" : s.status === "critical" ? "Critical" : s.status === "pending" ? "Pending" : "Normal";
+                        return (
+                          <tr key={s.id}>
+                            <td style={{ ...tableCellStyle, fontWeight: 500 }}>{s.patient_name}</td>
+                            <td style={tableCellStyle}>{s.test_type}</td>
+                            <td style={tableCellStyle}>{s.result || "—"}</td>
+                            <td style={{ ...tableCellStyle, color: '#64748b' }}>{formatScreeningDate(s.screened_at)}</td>
+                            <td style={tableCellStyle}><span style={{ fontSize: '12px', ...statusStyles, padding: '4px 8px', borderRadius: '4px', fontWeight: 600 }}>{statusLabel}</span></td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
               </table>
           </div>

@@ -3,6 +3,8 @@ import { useState } from 'react';
 import './page.css';
 import supabase from '@/app/lib/api/supabase';
 
+import supabase from '@/app/lib/api/supabase';
+
 interface FormData {
   patientName: string;
   email: string;
@@ -31,6 +33,10 @@ export interface CreateAppointmentInput {
 }
 
 export async function bookAppointment(input: CreateAppointmentInput) {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+  }
+
   const payload = {
     name: input.name,
     email: input.email,
