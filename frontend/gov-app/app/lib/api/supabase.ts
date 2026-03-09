@@ -1,48 +1,134 @@
-import { createClient } from '@supabase/supabase-js';
+// In-memory mock for Supabase-like API used by the app.
+// Replaces the real `@supabase/supabase-js` client during local development/testing.
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+type GovtComplaint = any;
 
-type SupabaseLike = any;
+const now = () => new Date().toISOString();
 
-let supabase: SupabaseLike;
-
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      storageKey: 'gov-app-auth',
+const mockDb: Record<string, any[]> = {
+  govt_complaints: [
+    {
+      id: 'mock-1',
+      hospital_id: null,
+      category: 'Initial Mock Advisory',
+      severity: 'LOW',
+      payload: { title: 'Welcome', description: 'This is mock data' },
+      message: 'This is a mock advisory',
+      created_at: now(),
     },
-  });
-} else {
-  if (typeof window !== 'undefined') {
-    console.warn(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Supabase client will be a no-op stub.'
-    );
-  }
-  // Minimal stub implementing the methods the app calls
-  supabase = {
-    auth: {
-      signInWithPassword: async (_: { email: string; password: string }) => ({
-        data: null,
-        error: { message: 'Supabase not configured (missing NEXT_PUBLIC_SUPABASE_URL / KEY)' },
-      }),
-      signOut: async () => ({ error: { message: 'Supabase not configured' } }),
-      onAuthStateChange: (_cb: any) => ({ data: null, subscription: { unsubscribe: () => {} } }),
+  ],
+  advisories: [
+    {
+      id: 'adv-1',
+      title: 'Mock advisory',
+      category: 'General',
+      severity: 'Low',
+      message: 'This is a mock advisory used when Supabase is disabled.',
+      created_at: now(),
     },
+  ],
+};
+
+function ensureCollection(name: string) {
+  if (!mockDb[name]) mockDb[name] = [];
+  return mockDb[name];
+}
+
+function clone(v: any) {
+  return JSON.parse(JSON.stringify(v));
+}
+
+function createQuery(table: string) {
+  const collection = ensureCollection(table);
+
+  return {
+    select: (_fields?: string) => {
+      const base = clone(collection);
+      return {
+        is: (field: string, val: any) => {
+          const filtered = base.filter((r: any) => (val === null ? r[field] === null : r[field] === val));
+          return {
+            order: async (orderField: string, opts?: { ascending?: boolean }) => {
+              const asc = opts?.ascending ?? true;
+              const sorted = filtered.slice().sort((a: any, b: any) => {
+                const ta = new Date(a[orderField]).getTime();
+                const tb = new Date(b[orderField]).getTime();
+                return asc ? ta - tb : tb - ta;
+              });
+              return { data: sorted, error: null };
+            },
+          };
+        },
+        eq: (field: string, val: any) => {
+          const filtered = base.filter((r: any) => r[field] === val);
+          return {
+            order: async (orderField: string, opts?: { ascending?: boolean }) => {
+              const asc = opts?.ascending ?? true;
+              const sorted = filtered.slice().sort((a: any, b: any) => {
+                const ta = new Date(a[orderField]).getTime();
+                const tb = new Date(b[orderField]).getTime();
+                return asc ? ta - tb : tb - ta;
+              });
+              return { data: sorted, error: null };
+            },
+            then: async (cb: any) => cb({ data: filtered, error: null }),
+          };
+        },
+        order: async (orderField: string, opts?: { ascending?: boolean }) => {
+          const asc = opts?.ascending ?? true;
+          const sorted = base.slice().sort((a: any, b: any) => {
+            const ta = new Date(a[orderField]).getTime();
+            const tb = new Date(b[orderField]).getTime();
+            return asc ? ta - tb : tb - ta;
+          });
+          return { data: sorted, error: null };
+        },
+      };
+    },
+    insert: async (items: any[] | any) => {
+      const arr = Array.isArray(items) ? items : [items];
+      const inserted = arr.map((it: any) => {
+        const obj = { ...it };
+        if (!obj.id) obj.id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        if (!obj.created_at) obj.created_at = now();
+        collection.unshift(obj);
+        return obj;
+      });
+      return { data: inserted, error: null };
+    },
+    update: (updates: any) => ({
+      eq: async (field: string, val: any) => {
+        const idx = collection.findIndex((r: any) => r[field] === val);
+        if (idx === -1) return { data: null, error: { message: 'Not found' } };
+        collection[idx] = { ...collection[idx], ...updates };
+        return { data: [collection[idx]], error: null };
+      },
+    }),
+    delete: () => ({
+      eq: async (field: string, val: any) => {
+        const idx = collection.findIndex((r: any) => r[field] === val);
+        if (idx === -1) return { data: null, error: { message: 'Not found' } };
+        collection.splice(idx, 1);
+        return { data: null, error: null };
+      },
+    }),
   };
 }
+
+const supabase = {
+  from: (table: string) => createQuery(table),
+  // Minimal auth stub kept for compatibility
+  auth: {
+    signInWithPassword: async (_: { email: string; password: string }) => ({ data: null, error: { message: 'Auth not available in mock' } }),
+    signOut: async () => ({ error: { message: 'Auth not available in mock' } }),
+    onAuthStateChange: (_cb: any) => ({ data: null, subscription: { unsubscribe: () => {} } }),
+  },
+};
 
 export { supabase };
 
 export const clearInvalidSession = async () => {
   try {
-    if (supabase?.auth?.signOut) {
-      await supabase.auth.signOut();
-    }
     if (typeof window !== 'undefined') {
       localStorage.removeItem('gov-app-auth');
       localStorage.removeItem('gov_auth');
@@ -52,14 +138,3 @@ export const clearInvalidSession = async () => {
     console.error('Error clearing session:', error);
   }
 };
-
-// Optional: hook auth state change if available
-try {
-  supabase?.auth?.onAuthStateChange?.((event: string, session: any) => {
-    if (event === 'TOKEN_REFRESHED') console.log('Token refreshed');
-    if (event === 'SIGNED_OUT') console.log('Signed out');
-    if (event === 'USER_UPDATED') console.log('User updated');
-  });
-} catch (e) {
-  // ignore for stub
-}
