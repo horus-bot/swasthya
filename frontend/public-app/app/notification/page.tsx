@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
+import supabase from '@/app/lib/api/supabase';
+import type { Notification as DBNotification } from '@/app/types/database';
 
 
 interface Notification {
@@ -13,6 +15,26 @@ interface Notification {
   actionRequired?: boolean;
 }
 
+
+
+function mapDbNotification(n: DBNotification): Notification {
+  const typeMap: Record<string, Notification['type']> = {
+    'health': 'health', 'appointment': 'appointment',
+    'emergency': 'emergency', 'system': 'system'
+  };
+  const typeName = n.notification_type?.type_name?.toLowerCase() ?? 'system';
+  return {
+    id: n.id,
+    title: n.title ?? 'Notification',
+    message: n.message ?? '',
+    type: typeMap[typeName] ?? 'system',
+    priority: typeName === 'emergency' ? 'high' : typeName === 'appointment' ? 'medium' : 'medium',
+    timestamp: new Date(n.created_at ?? Date.now()),
+    isRead: n.is_read,
+    actionRequired: typeName === 'emergency' || typeName === 'appointment',
+  };
+}
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState({
@@ -21,68 +43,25 @@ export default function NotificationsPage() {
     status: 'all'
   });
 
-  // Mock notification data
   useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: '1',
-        title: 'Vaccination Reminder',
-        message: 'Your annual flu vaccination is due in 3 days. Please schedule an appointment at your nearest healthcare facility.',
-        type: 'health',
-        priority: 'medium',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        isRead: false,
-        actionRequired: true
-      },
-      {
-        id: '2',
-        title: 'Appointment Confirmation',
-        message: 'Your appointment with Dr. Smith on February 6, 2026 at 10:30 AM has been confirmed.',
-        type: 'appointment',
-        priority: 'medium',
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-        isRead: false
-      },
-      {
-        id: '3',
-        title: 'Health Emergency Alert',
-        message: 'COVID-19 outbreak reported in your area. Please follow safety protocols and get tested if you experience symptoms.',
-        type: 'emergency',
-        priority: 'high',
-        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-        isRead: true,
-        actionRequired: true
-      },
-      {
-        id: '4',
-        title: 'Test Results Available',
-        message: 'Your blood test results from January 30, 2026 are now available in your health profile.',
-        type: 'health',
-        priority: 'medium',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-        isRead: false
-      },
-      {
-        id: '5',
-        title: 'System Maintenance',
-        message: 'Scheduled maintenance on February 8, 2026 from 2:00 AM to 4:00 AM. Some services may be temporarily unavailable.',
-        type: 'system',
-        priority: 'low',
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-        isRead: true
-      },
-      {
-        id: '6',
-        title: 'Appointment Reminder',
-        message: 'Reminder: You have an appointment tomorrow at 2:00 PM with Dr. Johnson at City General Hospital.',
-        type: 'appointment',
-        priority: 'high',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        isRead: false,
-        actionRequired: true
+    async function loadNotifications() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const res = await fetch(`/api/notifications?userId=${user.id}`);
+          if (res.ok) {
+            const dbNotifications: DBNotification[] = await res.json();
+            if (dbNotifications.length > 0) {
+              setNotifications(dbNotifications.map(mapDbNotification));
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading notifications:', err);
       }
-    ];
-    setNotifications(mockNotifications);
+    }
+    loadNotifications();
   }, []);
 
   const filteredNotifications = notifications.filter(notification => {
@@ -93,18 +72,44 @@ export default function NotificationsPage() {
     return true;
   });
 
-  const handleMarkAsRead = (id: string) => {
+  const handleMarkAsRead = async (id: string) => {
     setNotifications(prev => prev.map(notification => 
       notification.id === id ? { ...notification, isRead: true } : notification
     ));
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId: id }),
+      });
+    } catch (err) {
+      console.error('Error marking notification read:', err);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
     setNotifications(prev => prev.map(notification => ({ ...notification, isRead: true })));
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await fetch('/api/notifications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, markAll: true }),
+        });
+      }
+    } catch (err) {
+      console.error('Error marking all notifications read:', err);
+    }
   };
 
-  const handleDeleteNotification = (id: string) => {
+  const handleDeleteNotification = async (id: string) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
+    try {
+      await supabase.from('notifications').delete().eq('id', id);
+    } catch (err) {
+      console.error('Error deleting notification:', err);
+    }
   };
 
   const formatTimeAgo = (timestamp: Date) => {
@@ -169,7 +174,7 @@ export default function NotificationsPage() {
             </p>
           </div>
           
-          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-teal-50 items-center justify-center text-teal-600 border border-teal-100 shadow-sm flex-shrink-0">
+          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-teal-50 items-center justify-center text-teal-600 border border-teal-100 shadow-sm shrink-0">
             <svg className="w-7 md:w-8 h-7 md:h-8" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.89 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5S10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z"/>
             </svg>
@@ -261,7 +266,7 @@ export default function NotificationsPage() {
 
                   <div className="flex gap-3 md:gap-5">
                     {/* Icon - Always side by side natively */}
-                    <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 md:mt-0 ${iconTheme}`}>
+                    <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shrink-0 mt-0.5 md:mt-0 ${iconTheme}`}>
                       {getTypeIcon(notification.type)}
                     </div>
 
@@ -278,7 +283,7 @@ export default function NotificationsPage() {
                             {notification.priority}
                           </span>
                         </div>
-                        <span className="text-[10px] md:text-xs font-bold tracking-wider text-slate-400 uppercase pt-0.5 flex-shrink-0">
+                        <span className="text-[10px] md:text-xs font-bold tracking-wider text-slate-400 uppercase pt-0.5 shrink-0">
                           {formatTimeAgo(notification.timestamp)}
                         </span>
                       </div>

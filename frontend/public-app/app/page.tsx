@@ -133,13 +133,13 @@ export default function LandingPage() {
       
       {/* Dynamic Background */}
       <div ref={bgRef} className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900 opacity-90"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-slate-900 via-teal-900 to-slate-900 opacity-90"></div>
         <div className="floating-orb absolute top-1/4 left-1/4 w-64 h-64 bg-teal-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
         <div className="floating-orb absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-600 rounded-full mix-blend-screen filter blur-[120px] opacity-20"></div>
-        <div className="floating-orb absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600 rounded-full mix-blend-screen filter blur-[150px] opacity-10"></div>
+        <div className="floating-orb absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-blue-600 rounded-full mix-blend-screen filter blur-[150px] opacity-10"></div>
         
         {/* Grid Pattern Overlay */}
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10"></div>
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10"></div>
       </div>
 
       {/* Heartbeat SVG Layer */}
@@ -171,7 +171,7 @@ export default function LandingPage() {
 
         {/* Text Section */}
         <div className="space-y-6 mb-12">
-          <h1 ref={titleRef} className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-teal-200 via-white to-teal-200">
+          <h1 ref={titleRef} className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-teal-200 via-white to-teal-200">
             Swasthya
           </h1>
           <p ref={subtitleRef} className="text-xl md:text-2xl text-teal-100/80 max-w-2xl mx-auto font-light leading-relaxed">
@@ -188,7 +188,7 @@ export default function LandingPage() {
 
         {/* CTA Button */}
         <div className="relative group">
-            <div className={`absolute -inset-1 bg-gradient-to-r from-teal-400 to-emerald-400 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 ${isExiting ? 'opacity-0' : ''}`}></div>
+            <div className={`absolute -inset-1 bg-linear-to-r from-teal-400 to-emerald-400 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 ${isExiting ? 'opacity-0' : ''}`}></div>
             <button
               ref={buttonRef}
               onClick={handleStart}

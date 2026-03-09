@@ -1,11 +1,34 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Activity, Heart, Moon, Flame, TrendingUp, Calendar, ChevronRight } from 'lucide-react';
+import supabase from '@/app/lib/api/supabase';
+import type { UserHealthRecord } from '@/app/types/database';
 
 export default function AnalyticsPage() {
   const [activeRange, setActiveRange] = useState('Week');
+  const [healthRecord, setHealthRecord] = useState<UserHealthRecord | null>(null);
 
   const ranges = ['Day', 'Week', 'Month', 'Year'];
+
+  useEffect(() => {
+    async function loadHealthData() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const res = await fetch(`/api/user/profile?userId=${user.id}`);
+          if (res.ok) {
+            const profile = await res.json();
+            if (profile.user_health_records?.length > 0) {
+              setHealthRecord(profile.user_health_records[0]);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading health data:', err);
+      }
+    }
+    loadHealthData();
+  }, []);
 
   const weeklyData = [
     { day: 'Mon', steps: 60, hr: 45, sleep: 80 },
@@ -32,7 +55,7 @@ export default function AnalyticsPage() {
             </p>
           </div>
           
-          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-teal-50 items-center justify-center text-teal-600 border border-teal-100 shadow-sm flex-shrink-0">
+          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-teal-50 items-center justify-center text-teal-600 border border-teal-100 shadow-sm shrink-0">
              <TrendingUp size={28} strokeWidth={2.5} />
           </div>
         </div>
@@ -54,8 +77,8 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <StatCard title="Total Steps" value="45,231" unit="steps" icon={Activity} color="bg-blue-500" lightColor="bg-blue-50" textColor="text-blue-500" trend="+12%" />
           <StatCard title="Avg Heart Rate" value="72" unit="bpm" icon={Heart} color="bg-rose-500" lightColor="bg-rose-50" textColor="text-rose-500" trend="-2%" />
-          <StatCard title="Avg Sleep" value="7.2" unit="hrs" icon={Moon} color="bg-indigo-500" lightColor="bg-indigo-50" textColor="text-indigo-500" trend="+5%" />
-          <StatCard title="Calories Burned" value="14,050" unit="kcal" icon={Flame} color="bg-orange-500" lightColor="bg-orange-50" textColor="text-orange-500" trend="+8%" />
+          <StatCard title="BMI" value={healthRecord?.bmi?.toFixed(1) ?? '22.5'} unit="kg/m²" icon={Moon} color="bg-indigo-500" lightColor="bg-indigo-50" textColor="text-indigo-500" trend="" />
+          <StatCard title="Blood Type" value={healthRecord?.blood_type ?? 'N/A'} unit="" icon={Flame} color="bg-orange-500" lightColor="bg-orange-50" textColor="text-orange-500" trend="" />
         </div>
 
         {/* Main Chart Section */}
@@ -82,11 +105,11 @@ export default function AnalyticsPage() {
               <div key={idx} className="flex-1 flex flex-col justify-end items-center gap-1 h-full z-10 relative group pb-1">
                 <div className="w-full flex justify-center items-end gap-1 px-1 h-full">
                   <div 
-                    className="w-1/2 bg-blue-500 rounded-t-sm md:rounded-t-md transition-all duration-700 ease-out group-hover:bg-blue-400 max-w-[12px] md:max-w-[20px]" 
+                    className="w-1/2 bg-blue-500 rounded-t-sm md:rounded-t-md transition-all duration-700 ease-out group-hover:bg-blue-400 max-w-3 md:max-w-5" 
                     style={{ height: `${data.steps}%` }}
                   ></div>
                   <div 
-                    className="w-1/2 bg-indigo-200 rounded-t-sm md:rounded-t-md transition-all duration-700 ease-out group-hover:bg-indigo-300 max-w-[12px] md:max-w-[20px]" 
+                    className="w-1/2 bg-indigo-200 rounded-t-sm md:rounded-t-md transition-all duration-700 ease-out group-hover:bg-indigo-300 max-w-3 md:max-w-5" 
                     style={{ height: `${data.sleep}%` }}
                   ></div>
                 </div>
@@ -119,7 +142,7 @@ export default function AnalyticsPage() {
 }
 
 function StatCard({ title, value, unit, icon: Icon, color, lightColor, textColor, trend }: any) {
-  const isPositive = trend.startsWith('+');
+  const isPositive = trend?.startsWith('+');
   return (
     <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all group overflow-hidden relative">
       <div className={`absolute -right-4 -top-4 w-16 h-16 rounded-full ${lightColor} blur-2xl opacity-50 group-hover:scale-150 transition-transform duration-700`}></div>
@@ -127,9 +150,11 @@ function StatCard({ title, value, unit, icon: Icon, color, lightColor, textColor
         <div className={`p-2 sm:p-2.5 rounded-xl ${lightColor} ${textColor}`}>
           <Icon size={18} className="sm:w-5 sm:h-5" />
         </div>
-        <div className={`text-[10px] sm:text-xs font-black px-1.5 py-0.5 rounded-md ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-          {trend}
-        </div>
+        {trend && (
+          <div className={`text-[10px] sm:text-xs font-black px-1.5 py-0.5 rounded-md ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+            {trend}
+          </div>
+        )}
       </div>
       <div className="relative z-10">
         <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{title}</p>

@@ -27,6 +27,7 @@ import {
 import { useLanguage } from '@/lib/LanguageContext';
 import { motion } from 'framer-motion';
 import { fetchParticles, fetchFullArticle } from '@/lib/api';
+import type { HospitalWithDetails } from '@/app/types/database';
 
 // Helper to get news severity and priority rating (inferred from content)
 const getNewsPriority = (title: string): { severity: 'Critical' | 'High' | 'Medium' | 'Low'; rating: number; color: 'red' | 'orange' | 'yellow' | 'blue' } => {
@@ -60,13 +61,22 @@ const getDomain = (url: string) => {
   }
 };
 
-const MOCK_HOSPITALS = [
-  { id: 1, name: "Apollo Hospitals", zone: "Greams Road", type: "Multi-specialty", rating: 4.9, doctors: 120, beds: 450, status: "Available", image: "https://images.unsplash.com/photo-1587351021759-3e566b9af923?auto=format&fit=crop&q=80&w=300&h=200" },
-  { id: 2, name: "Fortis Malar", zone: "Adyar", type: "Cardiac Care", rating: 4.7, doctors: 85, beds: 220, status: "Busy", image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=300&h=200" },
-  { id: 3, name: "MIOT International", zone: "Manapakkam", type: "Trauma Care", rating: 4.8, doctors: 95, beds: 350, status: "Available", image: "https://images.unsplash.com/photo-1516549655169-df83a092fc43?auto=format&fit=crop&q=80&w=300&h=200" },
-  { id: 4, name: "Kauvery Hospital", zone: "Alwarpet", type: "General", rating: 4.6, doctors: 60, beds: 180, status: "Critical", image: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?auto=format&fit=crop&q=80&w=300&h=200" },
-  { id: 5, name: "Rajiv Gandhi Govt Hospital", zone: "Park Town", type: "Government", rating: 4.2, doctors: 200, beds: 800, status: "Busy", image: "https://images.unsplash.com/photo-1596541223130-5d31a73fb6c6?auto=format&fit=crop&q=80&w=300&h=200" },
-];
+function mapHospitalToDisplay(h: HospitalWithDetails) {
+  const totalDoctors = h.hospital_doctors?.[0]?.total_doctors ?? 0;
+  const availableDoctors = h.hospital_doctors?.[0]?.available_doctors ?? 0;
+  const status = availableDoctors === 0 ? 'Critical' : availableDoctors < totalDoctors / 2 ? 'Busy' : 'Available';
+  return {
+    id: h.id,
+    name: h.hospital_name,
+    zone: h.address ?? 'N/A',
+    type: 'General',
+    rating: 4.5,
+    doctors: totalDoctors,
+    beds: h.hospital_equipment_inventory?.reduce((sum, e) => sum + (e.total_quantity ?? 0), 0) ?? 0,
+    status,
+    image: `https://ui-avatars.com/api/?name=${encodeURIComponent(h.hospital_name)}&background=0d9488&color=fff&size=300`,
+  };
+}
 
 export default function TrendingNewsPage() {
   const router = useRouter();
@@ -78,6 +88,26 @@ export default function TrendingNewsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [isArticleLoading, setIsArticleLoading] = useState(false);
+  const [hospitals, setHospitals] = useState<{ id: string | number; name: string; zone: string; type: string; rating: number; doctors: number; beds: number; status: string; image: string }[]>([]);
+
+  // Load hospitals from DB
+  useEffect(() => {
+    async function loadHospitals() {
+      try {
+        const res = await fetch('/api/hospitals');
+        if (res.ok) {
+          const data: HospitalWithDetails[] = await res.json();
+          if (data.length > 0) {
+            setHospitals(data.map(mapHospitalToDisplay));
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error loading hospitals:', err);
+      }
+    }
+    loadHospitals();
+  }, []);
 
   // Load articles on mount
   useEffect(() => {
@@ -103,7 +133,7 @@ export default function TrendingNewsPage() {
     return matchesFilter && matchesSearch;
   });
 
-  const filteredHospitals = MOCK_HOSPITALS.filter(h => 
+  const filteredHospitals = hospitals.filter(h => 
     h.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     h.zone.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -186,7 +216,7 @@ export default function TrendingNewsPage() {
     <div className="min-h-screen bg-slate-50 pb-28 md:pb-12">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-4">
-        <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
              <Link href="/home" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <ArrowLeft className="w-6 h-6 text-gray-700" />
@@ -217,7 +247,7 @@ export default function TrendingNewsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="max-w-screen-xl mx-auto mt-4 px-1">
+        <div className="max-w-7xl mx-auto mt-4 px-1">
            <div className="flex space-x-4 border-b border-gray-200">
               <button 
                 onClick={() => setActiveTab('news')} 
@@ -239,7 +269,7 @@ export default function TrendingNewsPage() {
       <>
 
       {/* Filter Tabs */}
-      <div className="max-w-screen-xl mx-auto px-4 py-6 overflow-x-auto no-scrollbar">
+      <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-auto no-scrollbar">
          <div className="flex gap-2">
             {['All', 'Critical', 'High', 'Medium', 'Low'].map((f) => (
                <button 
@@ -327,7 +357,7 @@ export default function TrendingNewsPage() {
       )}
 
       {/* News Feed Grid */}
-      <div className="max-w-screen-xl mx-auto px-4 pb-20">
+      <div className="max-w-7xl mx-auto px-4 pb-20">
          {isLoading ? (
            <div className="flex flex-col items-center justify-center py-20">
              <Loader2 size={48} className="animate-spin text-teal-500 mb-4" />
@@ -358,7 +388,7 @@ export default function TrendingNewsPage() {
                        {getSeverityBadge(priority)}
                     </div>
 
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight flex-grow">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight grow">
                        {news.title}
                     </h3>
 
@@ -402,7 +432,7 @@ export default function TrendingNewsPage() {
       )}
 
       {activeTab === 'hospitals' && (
-         <div className="max-w-screen-xl mx-auto px-4 py-6 pb-20">
+         <div className="max-w-7xl mx-auto px-4 py-6 pb-20">
             <h2 className="text-xl font-bold mb-4 text-slate-800">{t.trending.hospitalsTitle}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                {filteredHospitals.map((hospital, index) => (

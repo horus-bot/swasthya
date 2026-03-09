@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { fetchParticles, fetchFullArticle } from "@/lib/api";
 import NotificationDropdown from "@/components/common/NotificationDropdown";
+import supabase from "@/app/lib/api/supabase";
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -47,15 +48,47 @@ export default function HomePage() {
   const mainRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [weather, setWeather] = useState<any>({
-    temp_c: 31,
-    condition: { text: 'Mostly Sunny' },
-    humidity: 70,
-  });
+  const [weather, setWeather] = useState<any>(null);
   const [healthNews, setHealthNews] = useState<any[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isArticleLoading, setIsArticleLoading] = useState(false);
+  const [userName, setUserName] = useState<string>('');
+
+  // Fetch weather data from API
+  useEffect(() => {
+    async function loadWeather() {
+      try {
+        const res = await fetch('/api/weather');
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.temp_c !== undefined) setWeather(data);
+        }
+      } catch (err) {
+        console.error('Error loading weather:', err);
+      }
+    }
+    loadWeather();
+  }, []);
+
+  // Fetch user name from profile
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const res = await fetch(`/api/user/profile?userId=${user.id}`);
+          if (res.ok) {
+            const profile = await res.json();
+            if (profile?.name) setUserName(profile.name);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading user:', err);
+      }
+    }
+    loadUser();
+  }, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -138,9 +171,11 @@ export default function HomePage() {
       <main className="px-5 space-y-8 pt-24 lg:pt-28 max-w-7xl mx-auto w-full pb-32">
 
         {/* TOP SECTION: Weather */}
+        {weather && (
         <div className="animate-scale w-full">
           <WeatherCardCompact weather={weather} />
         </div>
+        )}
 
         {/* MIDDLE SECTION: Trending News (Full Width & Upgraded) */}
         <div className="animate-up space-y-4 pt-4">
@@ -149,7 +184,7 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center text-white shadow-xl shadow-slate-900/20">
                 <Newspaper size={20} />
               </div>
-              <h3 className="font-[900] text-slate-800 text-2xl tracking-tight">Trending Updates</h3>
+              <h3 className="font-black text-slate-800 text-2xl tracking-tight">Trending Updates</h3>
             </div>
             <Link href="/trending-news" className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-black tracking-widest uppercase transition-all shadow-sm active:scale-95">
               Explore All
@@ -159,7 +194,7 @@ export default function HomePage() {
           <div className="relative w-full mask-fade-edges pb-4">
             <div className="flex gap-6 overflow-x-auto pb-8 pt-4 no-scrollbar px-2 snap-x snap-mandatory">
               {isLoading ? (
-                [1, 2, 3, 4].map(i => <div key={i} className="min-w-[280px] lg:min-w-[400px] h-[190px] lg:h-[260px] bg-slate-100 rounded-[2.5rem] animate-pulse border border-slate-200 shadow-sm" />)
+                [1, 2, 3, 4].map(i => <div key={i} className="min-w-70 lg:min-w-100 h-47.5 lg:h-65 bg-slate-100 rounded-[2.5rem] animate-pulse border border-slate-200 shadow-sm" />)
               ) : (
                 healthNews.slice(0, 6).map((news: any, idx: number) => {
                   const cardThemes = [
@@ -174,13 +209,13 @@ export default function HomePage() {
                     <div
                       key={idx}
                       onClick={() => handleNewsClick(news)}
-                      className={`min-w-[280px] w-[280px] lg:min-w-[400px] lg:w-[400px] h-[200px] lg:h-[260px] ${theme.bg} border ${theme.border} p-6 lg:p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer group flex flex-col justify-between active:scale-[0.98] snap-center relative overflow-hidden`}
+                      className={`min-w-70 w-70 lg:min-w-100 lg:w-100 h-50 lg:h-65 ${theme.bg} border ${theme.border} p-6 lg:p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer group flex flex-col justify-between active:scale-[0.98] snap-center relative overflow-hidden`}
                     >
                       {/* Soft Light Overlay */}
                       <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] pointer-events-none group-hover:bg-white/10 transition-colors duration-500"></div>
 
                       <div className="relative z-10 flex justify-between items-start">
-                        <span className={`px-4 py-1.5 lg:px-5 lg:py-2 rounded-full text-[9px] lg:text-[11px] font-[900] tracking-[0.2em] uppercase border shadow-sm ${theme.pill}`}>
+                        <span className={`px-4 py-1.5 lg:px-5 lg:py-2 rounded-full text-[9px] lg:text-[11px] font-black tracking-[0.2em] uppercase border shadow-sm ${theme.pill}`}>
                           {news.source || 'Medical Update'}
                         </span>
                         <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center border transition-all duration-300 shadow-sm ${theme.button}`}>
@@ -189,10 +224,10 @@ export default function HomePage() {
                       </div>
 
                       <div className="relative z-10 pt-4">
-                        <h4 className="text-[17px] lg:text-[22px] font-[900] leading-tight line-clamp-3 text-slate-800 group-hover:text-slate-900 transition-colors duration-300">
+                        <h4 className="text-[17px] lg:text-[22px] font-black leading-tight line-clamp-3 text-slate-800 group-hover:text-slate-900 transition-colors duration-300">
                           {news.title}
                         </h4>
-                        <p className="text-[10px] lg:text-xs text-slate-500 font-[800] mt-3 lg:mt-4 tracking-[0.2em] uppercase">{news.published || 'Just Now'}</p>
+                        <p className="text-[10px] lg:text-xs text-slate-500 font-extrabold mt-3 lg:mt-4 tracking-[0.2em] uppercase">{news.published || 'Just Now'}</p>
                       </div>
                     </div>
                   )
@@ -293,7 +328,7 @@ export default function HomePage() {
 
       {/* ARTICLE MODAL (from previous design) */}
       {selectedArticle && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-7 border-b border-slate-100 bg-slate-50/50">
               <h3 className="text-xl font-bold text-slate-800 line-clamp-1">{selectedArticle.title}</h3>
@@ -318,7 +353,7 @@ export default function HomePage() {
 
 function MobileServiceCard({ href, title, icon: Icon, iconColor, bgColor }: { href: string; title: string; icon: any; iconColor: string; bgColor: string }) {
   return (
-    <Link href={href} className="animate-scale bg-white/60 backdrop-blur-xl border border-slate-100 p-4 sm:p-5 rounded-[2rem] flex flex-col justify-between gap-4 sm:gap-6 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 hover:border-slate-200 transition-all duration-500 group relative overflow-hidden">
+    <Link href={href} className="animate-scale bg-white/60 backdrop-blur-xl border border-slate-100 p-4 sm:p-5 rounded-4xl flex flex-col justify-between gap-4 sm:gap-6 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 hover:border-slate-200 transition-all duration-500 group relative overflow-hidden">
       {/* Decorative gradient blob */}
       <div className={`absolute -right-6 -top-6 w-24 h-24 ${bgColor} rounded-full blur-2xl opacity-50 group-hover:scale-150 transition-transform duration-700 pointer-events-none`}></div>
 
@@ -331,7 +366,7 @@ function MobileServiceCard({ href, title, icon: Icon, iconColor, bgColor }: { hr
         </div>
       </div>
       <div className="flex flex-col relative z-10">
-        <span className="text-[15px] font-[900] text-slate-800 tracking-tight group-hover:text-slate-900 transition-colors">{title}</span>
+        <span className="text-[15px] font-black text-slate-800 tracking-tight group-hover:text-slate-900 transition-colors">{title}</span>
       </div>
     </Link>
   );
@@ -339,7 +374,7 @@ function MobileServiceCard({ href, title, icon: Icon, iconColor, bgColor }: { hr
 
 function TipCard({ color, iconColor, title, desc, icon: Icon }: { color: string, iconColor: string, title: string, desc: string, icon: any }) {
   return (
-    <div className={`min-w-[240px] ${color} p-5 rounded-[2rem] flex flex-col gap-2 border border-black/5`}>
+    <div className={`min-w-60 ${color} p-5 rounded-4xl flex flex-col gap-2 border border-black/5`}>
       <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center ${iconColor} shadow-sm border border-black/5`}>
         <Icon size={20} />
       </div>
@@ -370,7 +405,7 @@ function WeatherCardCompact({ weather }: { weather: any }) {
     }
     // Default / Rainy / Cloudy
     return {
-      bg: 'bg-gradient-to-br from-[#4776E6] to-[#8E54E9] border-blue-400/20',
+      bg: 'bg-linear-to-br from-[#4776E6] to-[#8E54E9] border-blue-400/20',
       text: 'text-white',
       accent: 'text-blue-100',
       metricsBg: 'bg-white/10 border-white/10',
@@ -399,7 +434,7 @@ function WeatherCardCompact({ weather }: { weather: any }) {
         <div>
           <p className="text-[10px] font-black tracking-widest uppercase opacity-70 mb-0.5">Today's Forecast</p>
           <div className="flex items-baseline gap-1">
-            <h3 className="text-4xl font-[900] tracking-tighter leading-none">{weather?.temp_c}°</h3>
+            <h3 className="text-4xl font-black tracking-tighter leading-none">{weather?.temp_c}°</h3>
             <span className="text-sm font-bold opacity-60">C</span>
           </div>
           <p className="text-xs font-bold opacity-90 mt-1 uppercase tracking-tight">{weather?.condition?.text || 'Sunny'}</p>
@@ -419,7 +454,7 @@ function WeatherCardCompact({ weather }: { weather: any }) {
 
 function MetricBadge({ icon: Icon, label, value, theme }: { icon: any, label: string, value: string, theme: any }) {
   return (
-    <div className={`flex flex-col items-center justify-center p-3 px-4 min-w-[75px] ${theme.metricsBg} rounded-2xl backdrop-blur-sm border border-black/5 flex-shrink-0`}>
+    <div className={`flex flex-col items-center justify-center p-3 px-4 min-w-18.75 ${theme.metricsBg} rounded-2xl backdrop-blur-sm border border-black/5 shrink-0`}>
       <Icon size={16} className={`${theme.accent} mb-1.5`} />
       <span className={`text-sm font-black ${theme.metricsText} leading-none`}>{value}</span>
       <span className={`text-[9px] font-bold opacity-70 uppercase tracking-widest ${theme.metricsText} mt-1`}>{label}</span>
@@ -441,7 +476,7 @@ function MetricRow({ icon: Icon, label, value, theme }: { icon: any, label: stri
 
 function SkeletonTip() {
   return (
-    <div className="min-w-[240px] bg-slate-50 p-5 rounded-[2rem] flex flex-col gap-3 border border-slate-100 animate-pulse">
+    <div className="min-w-60 bg-slate-50 p-5 rounded-4xl flex flex-col gap-3 border border-slate-100 animate-pulse">
       <div className="w-10 h-10 rounded-xl bg-slate-200" />
       <div className="h-4 w-2/3 bg-slate-200 rounded" />
       <div className="space-y-1">

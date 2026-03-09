@@ -1,45 +1,79 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { User, Droplets, ArrowRight, HeartPulse, Activity, CalendarCheck, Phone, MapPin, FileText, AlertCircle, ShieldCheck, Mail, Ruler, Weight, Dna } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { User, Droplets, ArrowRight, HeartPulse, Activity, CalendarCheck, Phone, MapPin, FileText, AlertCircle, ShieldCheck, Mail, Ruler, Weight, Dna, Loader2 } from "lucide-react";
 import { QRCodeSVG } from 'qrcode.react';
-
-/* ------------------ Mock Data ------------------ */
-
-const vitalsData = [
-  { day: "Mon", heart: 75, bp: 118, sugar: 95 },
-  { day: "Tue", heart: 72, bp: 120, sugar: 92 },
-  { day: "Wed", heart: 78, bp: 115, sugar: 98 },
-  { day: "Thu", heart: 74, bp: 119, sugar: 94 },
-  { day: "Fri", heart: 76, bp: 122, sugar: 96 },
-];
+import type { UserProfile } from "@/app/types/database";
 
 /* ------------------ Page ------------------ */
 
 export default function ProfilePage() {
   const [isOpen, setIsOpen] = useState(false);
   const [qrUrl, setQrUrl] = useState("");
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const healthRecord = profile?.user_health_records?.[0] ?? null;
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { default: supabase } = await import("@/app/lib/api/supabase");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return;
+      }
+      const res = await fetch(`/api/user/profile?userId=${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.id) {
+          setProfile(data as UserProfile);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load profile:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Collect specific profile basic and health info for the QR Code
+    fetchProfile();
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    if (!profile) return;
     const profileData = {
-      name: "Keva Solankure",
-      age: 27,
-      gender: "Female",
-      phone: "+91 98765 43210",
-      email: "keva.s@email.com",
-      bloodType: "A Positive (A+)",
-      bmi: "21.4 (Normal)",
-      allergies: ["Dust Mites", "Pollen"],
-      disabilities: "None"
+      name: profile.name,
+      age: profile.age,
+      gender: profile.gender,
+      phone: profile.phone,
+      email: profile.email,
+      bloodType: healthRecord?.blood_type ?? "N/A",
+      bmi: healthRecord?.bmi ? `${healthRecord.bmi}` : "N/A",
+      allergies: healthRecord?.allergies?.split(", ") ?? [],
+      disabilities: healthRecord?.disabilities ?? "None",
     };
-    
-    // Base64 Encode the JSON payload string to pass via Query Param securely
+
     const encoded = btoa(JSON.stringify(profileData));
-    
-    // Dynamically fetch exact domain origin on client side
     setQrUrl(`${window.location.origin}/download-profile?data=${encoded}`);
-  }, []);
+  }, [profile, healthRecord]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-50/50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+      </main>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <main className="min-h-screen bg-slate-50/50 flex flex-col items-center justify-center gap-4">
+        <p className="text-slate-500 text-lg font-medium">Please sign in to view your profile.</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-50/50 pb-32">
@@ -48,8 +82,8 @@ export default function ProfilePage() {
         <div className="max-w-4xl w-full flex flex-col items-center">
           {/* Avatar Area */}
           <div className="relative group">
-            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-[2.5rem] bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center text-4xl sm:text-5xl font-[900] shadow-2xl shadow-teal-500/30 border-8 border-white group-hover:rotate-3 transition-transform duration-500">
-              K
+            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-[2.5rem] bg-linear-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center text-4xl sm:text-5xl font-black shadow-2xl shadow-teal-500/30 border-8 border-white group-hover:rotate-3 transition-transform duration-500">
+              {profile.name.charAt(0).toUpperCase()}
             </div>
             <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-2xl shadow-xl flex items-center justify-center text-teal-600 border border-slate-50">
               <ShieldCheck size={28} />
@@ -57,7 +91,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="mt-6 text-center">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Keva Solankure</h1>
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">{profile.name}</h1>
             <div className="flex flex-wrap justify-center items-center gap-3 mt-4">
               <div className="flex items-center gap-2 bg-teal-50 text-teal-700 px-4 py-2 rounded-2xl border border-teal-100 shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
@@ -65,7 +99,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-2xl border border-blue-100 shadow-sm">
                 <Mail size={14} />
-                <p className="font-bold text-[12px] tracking-wider uppercase">keva.s@email.com</p>
+                <p className="font-bold text-[12px] tracking-wider uppercase">{profile.email ?? 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -113,7 +147,7 @@ export default function ProfilePage() {
 
 
         {/* Personal Details */}
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 sm:p-8 flex flex-col">
+        <div className="bg-white rounded-4xl shadow-sm border border-slate-100 p-6 sm:p-8 flex flex-col">
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 sm:mb-8 text-center sm:text-left">
             <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shadow-sm">
               <User size={28} strokeWidth={2.5} />
@@ -124,16 +158,16 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="space-y-2">
-            <ProfileRow icon={User} label="Full Name" value="Keva Solankure" />
-            <ProfileRow icon={CalendarCheck} label="Birth Date" value="May 20, 1997" />
-            <ProfileRow icon={User} label="Gender" value="Female" />
-            <ProfileRow icon={Mail} label="Contact" value="+91 98765 43210" />
-            <ProfileRow icon={MapPin} label="Location" value="Mumbai, India" />
+            <ProfileRow icon={User} label="Full Name" value={profile.name} />
+            <ProfileRow icon={CalendarCheck} label="Age" value={profile.age ? `${profile.age} years` : 'N/A'} />
+            <ProfileRow icon={User} label="Gender" value={profile.gender ?? 'N/A'} />
+            <ProfileRow icon={Mail} label="Contact" value={profile.phone ?? 'N/A'} />
+            <ProfileRow icon={Mail} label="Email" value={profile.email ?? 'N/A'} />
           </div>
         </div>
 
         {/* Biometrics */}
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 sm:p-8 flex flex-col">
+        <div className="bg-white rounded-4xl shadow-sm border border-slate-100 p-6 sm:p-8 flex flex-col">
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 sm:mb-8 text-center sm:text-left">
             <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shadow-sm">
               <Dna size={28} strokeWidth={2.5} />
@@ -144,15 +178,14 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="space-y-2">
-            <ProfileRow icon={Droplets} label="Blood Group" value="A Positive (A+)" iconColor="text-rose-500" />
-            <ProfileRow icon={Ruler} label="Height" value="168 cm" />
-            <ProfileRow icon={Weight} label="Weight" value="62 kg" iconColor="text-amber-500" />
-            <ProfileRow icon={Activity} label="BMI Index" value="21.4 (Normal)" iconColor="text-emerald-500" />
+            <ProfileRow icon={Droplets} label="Blood Group" value={healthRecord?.blood_type ?? 'N/A'} iconColor="text-rose-500" />
+            <ProfileRow icon={Activity} label="BMI Index" value={healthRecord?.bmi ? `${healthRecord.bmi}` : 'N/A'} iconColor="text-emerald-500" />
+            <ProfileRow icon={AlertCircle} label="Disabilities" value={healthRecord?.disabilities ?? 'None'} />
           </div>
         </div>
 
         {/* Medical History */}
-        <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 sm:p-8 flex flex-col">
+        <div className="bg-white rounded-4xl shadow-sm border border-slate-100 p-6 sm:p-8 flex flex-col">
           <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 sm:mb-8 text-center sm:text-left">
             <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-sm">
               <HeartPulse size={28} strokeWidth={2.5} />
@@ -163,15 +196,13 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="space-y-2">
-            <ProfileRow icon={FileText} label="Conditions" value="Mild Asthma (Exercise-induced)" />
-            <ProfileRow icon={AlertCircle} label="Allergies" value="Dust Mites, Pollen" iconColor="text-orange-500" />
-            <ProfileRow icon={CalendarCheck} label="Last Wellness" value="February 14, 2026" />
-            <ProfileRow icon={ShieldCheck} label="Insurance" value="BlueCross Premium" iconColor="text-blue-500" />
+            <ProfileRow icon={FileText} label="Medical History" value={healthRecord?.medical_history ?? 'None on record'} />
+            <ProfileRow icon={AlertCircle} label="Allergies" value={healthRecord?.allergies ?? 'None'} iconColor="text-orange-500" />
           </div>
         </div>
 
         {/* Recent Doctor Visits */}
-        <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-[2rem] shadow-2xl p-6 sm:p-8 text-white flex flex-col">
+        <div className="bg-linear-to-br from-slate-900 via-slate-900 to-slate-800 rounded-4xl shadow-2xl p-6 sm:p-8 text-white flex flex-col">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 sm:mb-8 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center backdrop-blur-xl border border-white/10 shadow-xl">
@@ -188,7 +219,7 @@ export default function ProfilePage() {
           </div>
           
           <div className="space-y-4">
-            <div className="bg-white/5 border border-white/10 p-6 rounded-[2rem] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5 group cursor-pointer hover:bg-white/10 transition-all">
+            <div className="bg-white/5 border border-white/10 p-6 rounded-4xl flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5 group cursor-pointer hover:bg-white/10 transition-all">
               <div className="flex items-center gap-5">
                 <div className="w-16 h-16 bg-teal-500/20 rounded-3xl flex shrink-0 items-center justify-center text-teal-300 border border-teal-500/20 group-hover:scale-110 transition-transform">
                   <CalendarCheck size={28} />
@@ -208,94 +239,83 @@ export default function ProfilePage() {
 
       </div>
 
-      {/* Health Vitals Dashboard */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-12 flex flex-col items-center sm:items-start">
-        <div className="flex items-center gap-4 mb-8">
-           <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
-             <Activity size={24} />
-           </div>
-           <h2 className="text-3xl font-[900] text-slate-900 tracking-tighter">Vital Trend Monitor</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-          <VitalCard title="Cardiac Rhythm" unit="bpm" color="#ef4444" dataKey="heart" />
-          <VitalCard title="Pressure Map" unit="mmHg" color="#3b82f6" dataKey="bp" />
-          <VitalCard title="Glycemic Level" unit="mg/dL" color="#10b981" dataKey="sugar" />
-        </div>
-      </div>
-
-      {isOpen && <EditProfileModal onClose={() => setIsOpen(false)} />}
+      {isOpen && <EditProfileModal profile={profile} healthRecord={healthRecord} onClose={() => setIsOpen(false)} onSaved={fetchProfile} />}
     </main>
-  );
-}
-
-/* ------------------ Vital Card ------------------ */
-
-function VitalCard({
-  title,
-  unit,
-  color,
-  dataKey,
-}: {
-  title: string;
-  unit: string;
-  color: string;
-  dataKey: "heart" | "bp" | "sugar";
-}) {
-  const latest = vitalsData[vitalsData.length - 1][dataKey];
-  const alert = getAlert(dataKey, latest);
-
-  return (
-    <div className={`bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col items-center sm:items-start text-center sm:text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${alert ? 'animate-pulse shadow-red-500/30 shadow-2xl border-red-200' : 'shadow-sm'}`}>
-      <div className="flex flex-col items-center sm:items-start">
-        <h3 className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2">{title}</h3>
-        <p className="text-4xl font-[900] text-slate-800 tracking-tight">
-          {latest} <span className="text-xl text-slate-400 font-bold ml-1">{unit}</span>
-        </p>
-        
-        {alert && (
-          <div className="mt-5 flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2.5 rounded-2xl w-fit">
-            <AlertCircle size={16} className="animate-bounce" />
-            <p className="text-[12px] font-black uppercase tracking-wider">
-              {alert}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Mini bars */}
-      <div className="h-24 mt-8 flex items-end gap-2">
-        {vitalsData.map((item, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-t-lg rounded-b-sm transition-all duration-500 hover:opacity-100"
-            style={{
-              height: `${Math.max(15, Math.min((item[dataKey] / 150) * 100, 100))}%`,
-              backgroundColor: color,
-              opacity: 0.6,
-            }}
-          />
-        ))}
-      </div>
-    </div>
   );
 }
 
 /* ------------------ Alerts Logic ------------------ */
 
-function getAlert(type: string, value: number) {
-  if (type === "heart" && value > 100) return "High heart rate";
-  if (type === "bp" && value > 140) return "High blood pressure";
-  if (type === "sugar" && value > 150) return "High blood sugar";
-  return null;
-}
-
 /* ------------------ Modal ------------------ */
 
-function EditProfileModal({ onClose }: { onClose: () => void }) {
+function EditProfileModal({ profile, healthRecord, onClose, onSaved }: { profile: UserProfile; healthRecord: UserProfile["user_health_records"][0] | null; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({
+    name: profile.name,
+    email: profile.email ?? "",
+    phone: profile.phone ?? "",
+    gender: profile.gender ?? "",
+    age: profile.age?.toString() ?? "",
+    blood_type: healthRecord?.blood_type ?? "",
+    allergies: healthRecord?.allergies ?? "",
+    bmi: healthRecord?.bmi?.toString() ?? "",
+    disabilities: healthRecord?.disabilities ?? "",
+    medical_history: healthRecord?.medical_history ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const { default: supabase } = await import("@/app/lib/api/supabase");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("You must be logged in to update your profile.");
+        return;
+      }
+
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          userDetails: {
+            name: form.name,
+            email: form.email,
+            phone: form.phone,
+            gender: form.gender,
+            age: form.age ? parseInt(form.age, 10) : null,
+          },
+          healthRecord: {
+            blood_type: form.blood_type,
+            allergies: form.allergies,
+            bmi: form.bmi ? parseFloat(form.bmi) : null,
+            disabilities: form.disabilities,
+            medical_history: form.medical_history,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to save");
+      }
+
+      onSaved();
+      onClose();
+    } catch (err: any) {
+      console.error("Save failed:", err);
+      alert(err.message || "Failed to save profile");
+    } finally {
+      setSaving(false);
+    }
+  };
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 animate-in fade-in duration-300">
-      <div className="bg-white rounded-t-[2rem] sm:rounded-3xl p-6 sm:p-8 w-full max-w-lg md:max-w-2xl animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-t-4xl sm:rounded-3xl p-6 sm:p-8 w-full max-w-lg md:max-w-2xl animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         
         {/* Decorative Top Bar for Mobile */}
         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden pointer-events-none"></div>
@@ -331,14 +351,14 @@ function EditProfileModal({ onClose }: { onClose: () => void }) {
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Full Name</label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input type="text" defaultValue="Keva Solankure" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all font-bold text-sm" />
+                    <input type="text" name="name" value={form.name} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all font-bold text-sm" />
                   </div>
                </div>
                <div>
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email Address</label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input type="email" defaultValue="keva.s@email.com" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all font-bold text-sm" />
+                    <input type="email" name="email" value={form.email} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all font-bold text-sm" />
                   </div>
                </div>
              </div>
@@ -353,10 +373,16 @@ function EditProfileModal({ onClose }: { onClose: () => void }) {
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Blood Type</label>
                   <div className="relative">
                     <Droplets className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400 w-4 h-4" />
-                    <select className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition-all font-bold text-sm appearance-none">
+                    <select name="blood_type" value={form.blood_type} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition-all font-bold text-sm appearance-none">
+                      <option value="">Select</option>
                       <option value="A+">A Positive (A+)</option>
-                      <option value="O+">O Positive (O+)</option>
+                      <option value="A-">A Negative (A-)</option>
                       <option value="B+">B Positive (B+)</option>
+                      <option value="B-">B Negative (B-)</option>
+                      <option value="O+">O Positive (O+)</option>
+                      <option value="O-">O Negative (O-)</option>
+                      <option value="AB+">AB Positive (AB+)</option>
+                      <option value="AB-">AB Negative (AB-)</option>
                     </select>
                   </div>
                </div>
@@ -364,14 +390,14 @@ function EditProfileModal({ onClose }: { onClose: () => void }) {
                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Height (cm)</label>
                   <div className="relative">
                     <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <input type="number" defaultValue="168" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all font-bold text-sm" />
+                    <input type="number" name="bmi" value={form.bmi} onChange={handleChange} placeholder="BMI" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all font-bold text-sm" />
                   </div>
                </div>
                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Weight (kg)</label>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Allergies</label>
                   <div className="relative">
-                    <Weight className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <input type="number" defaultValue="62" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all font-bold text-sm" />
+                    <AlertCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input type="text" name="allergies" value={form.allergies} onChange={handleChange} placeholder="e.g. Dust, Pollen" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all font-bold text-sm" />
                   </div>
                </div>
              </div>
@@ -388,10 +414,11 @@ function EditProfileModal({ onClose }: { onClose: () => void }) {
             Cancel
           </button>
           <button 
-            onClick={onClose} 
-            className="w-full sm:w-auto px-10 py-4 sm:py-3.5 bg-teal-500 text-white font-black tracking-widest uppercase rounded-2xl hover:bg-teal-600 shadow-lg shadow-teal-500/30 transition-all active:scale-95 flex justify-center"
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full sm:w-auto px-10 py-4 sm:py-3.5 bg-teal-500 text-white font-black tracking-widest uppercase rounded-2xl hover:bg-teal-600 shadow-lg shadow-teal-500/30 transition-all active:scale-95 flex justify-center disabled:opacity-50"
           >
-            Save Changes
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
@@ -403,7 +430,7 @@ function EditProfileModal({ onClose }: { onClose: () => void }) {
 
 function ProfileStat({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="bg-white border border-slate-100 p-4 rounded-[1.5rem] shadow-sm text-center flex flex-col items-center transition-all hover:scale-105">
+    <div className="bg-white border border-slate-100 p-4 rounded-3xl shadow-sm text-center flex flex-col items-center transition-all hover:scale-105">
       <span className={`text-xl font-black ${color}`}>{value}</span>
       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{label}</span>
     </div>
@@ -419,7 +446,7 @@ function ProfileRow({ icon: Icon, label, value, iconColor = "text-slate-400" }: 
         </div>
         <span className="text-slate-500 font-black text-[10px] uppercase tracking-[0.2em] text-center sm:text-left">{label}</span>
       </div>
-      <span className="font-[900] text-slate-800 text-[16px] sm:text-[14px] tracking-tight text-center sm:text-right">{value}</span>
+      <span className="font-black text-slate-800 text-[16px] sm:text-[14px] tracking-tight text-center sm:text-right">{value}</span>
     </div>
   );
 }

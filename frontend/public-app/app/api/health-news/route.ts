@@ -1,27 +1,27 @@
 import { NextResponse } from 'next/server';
+import supabase from '@/app/lib/api/supabase';
 
 export async function GET() {
-  // Return mock health news instead of scraping The Hindu via axios and cheerio
-  const limitedUpdates = [
-    {
-      title: 'City Hospitals Report Mild Increase in Seasonal Flu',
-      source: 'Mock News Source',
-      link: 'https://example.com/flu-update',
-      date: new Date().toISOString().split('T')[0]
-    },
-    {
-      title: 'New Health Infrastructure Initiated in Metro Regions',
-      source: 'Mock Health Dept News',
-      link: 'https://example.com/infra-update',
-      date: new Date().toISOString().split('T')[0]
-    },
-    {
-      title: 'Free Health Screening Camps To Be Held This Weekend',
-      source: 'Community Board',
-      link: 'https://example.com/camps',
-      date: new Date().toISOString().split('T')[0]
-    }
-  ];
+  try {
+    // Attempt to fetch notifications that serve as health news/alerts
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*, notification_type:notification_type_id(*)')
+      .order('created_at', { ascending: false })
+      .limit(10);
 
-  return NextResponse.json({ healthUpdates: limitedUpdates });
+    if (!error && data && data.length > 0) {
+      const healthUpdates = data.map((n: any) => ({
+        title: n.title ?? 'Health Update',
+        source: n.notification_type?.type_name ?? 'Health Dept',
+        link: '',
+        date: n.created_at?.split('T')[0] ?? new Date().toISOString().split('T')[0],
+      }));
+      return NextResponse.json({ healthUpdates });
+    }
+  } catch (err) {
+    console.error('Error fetching health news:', err);
+  }
+
+  return NextResponse.json({ healthUpdates: [] });
 }

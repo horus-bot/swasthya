@@ -18,7 +18,7 @@ export default function Header() {
               <MapPin size={10} className="text-white" />
               <span className="truncate max-w-[80px] sm:max-w-none">Chennai, TN</span>
             </div>
-            <h1 className="text-xl sm:text-3xl font-[900] text-white tracking-tighter leading-none shadow-sm">Swasthya</h1>
+            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tighter leading-none shadow-sm">Swasthya</h1>
           </div>
         </Link>
         <div className="flex gap-1.5 sm:gap-2 animate-down items-center shrink-0">

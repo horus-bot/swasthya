@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from 'react';
 import './clinics.css';
+import type { HospitalWithDetails } from "@/app/types/database";
 
 interface Clinic {
-  id: number;
+  id: string;
   name: string;
   address: string;
   distance: string;
@@ -14,6 +15,33 @@ interface Clinic {
   isOpen: boolean;
   emergencyService: boolean;
   image: string;
+  totalDoctors: number;
+  availableDoctors: number;
+}
+
+function hospitalToClinic(h: HospitalWithDetails): Clinic {
+  const docs = h.hospital_doctors?.[0];
+  const availDoctors = docs?.available_doctors ?? 0;
+  const totalDoctors = docs?.total_doctors ?? 0;
+  const equipNames = (h.hospital_equipment_inventory ?? [])
+    .map((e) => e.equipment_types?.equipment_name)
+    .filter(Boolean) as string[];
+
+  return {
+    id: h.id,
+    name: h.hospital_name,
+    address: h.address ?? "Address not available",
+    distance: "—",
+    waitingTime: availDoctors > 0 ? Math.round(30 / availDoctors * 5) : 60,
+    rating: 4.5,
+    departments: equipNames.length > 0 ? equipNames : ["General Medicine"],
+    phone: h.phone ?? "N/A",
+    isOpen: availDoctors > 0,
+    emergencyService: equipNames.some((e) => e.toLowerCase().includes("emergency") || e.toLowerCase().includes("ventilator")),
+    image: "",
+    totalDoctors,
+    availableDoctors: availDoctors,
+  };
 }
 
 export default function ClinicsPage() {
@@ -21,87 +49,24 @@ export default function ClinicsPage() {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [sortBy, setSortBy] = useState('distance');
   const [showFilters, setShowFilters] = useState(false);
+  const [clinics, setClinics] = useState<Clinic[]>([]);
 
-  const [clinics] = useState<Clinic[]>([
-    {
-      id: 1,
-      name: "Central Government Hospital",
-      address: "123 Main Street, Downtown",
-      distance: "0.5 km",
-      waitingTime: 15,
-      rating: 4.8,
-      departments: ["General Medicine", "Emergency", "Cardiology"],
-      phone: "+1 (555) 123-4567",
-      isOpen: true,
-      emergencyService: true,
-      image: "/hospital1.jpg"
-    },
-    {
-      id: 2,
-      name: "City Health Clinic",
-      address: "456 Oak Avenue, Midtown",
-      distance: "1.2 km",
-      waitingTime: 25,
-      rating: 4.6,
-      departments: ["General Medicine", "Pediatrics", "Dermatology"],
-      phone: "+1 (555) 234-5678",
-      isOpen: true,
-      emergencyService: false,
-      image: "/hospital2.jpg"
-    },
-    {
-      id: 3,
-      name: "Community Medical Center",
-      address: "789 Pine Road, Westside",
-      distance: "2.1 km",
-      waitingTime: 35,
-      rating: 4.4,
-      departments: ["General Medicine", "Orthopedics", "Neurology"],
-      phone: "+1 (555) 345-6789",
-      isOpen: false,
-      emergencyService: true,
-      image: "/hospital3.jpg"
-    },
-    {
-      id: 4,
-      name: "Regional Health Hub",
-      address: "321 Cedar Lane, Northside",
-      distance: "3.0 km",
-      waitingTime: 10,
-      rating: 4.9,
-      departments: ["General Medicine", "Emergency", "Surgery", "ICU"],
-      phone: "+1 (555) 456-7890",
-      isOpen: true,
-      emergencyService: true,
-      image: "/hospital4.jpg"
-    },
-    {
-      id: 5,
-      name: "Family Care Clinic",
-      address: "654 Elm Street, Southside",
-      distance: "2.8 km",
-      waitingTime: 20,
-      rating: 4.3,
-      departments: ["Family Medicine", "Pediatrics", "Women's Health"],
-      phone: "+1 (555) 567-8901",
-      isOpen: true,
-      emergencyService: false,
-      image: "/hospital5.jpg"
-    },
-    {
-      id: 6,
-      name: "Emergency Medical Center",
-      address: "987 Maple Drive, Eastside",
-      distance: "4.5 km",
-      waitingTime: 5,
-      rating: 4.7,
-      departments: ["Emergency", "Trauma", "Critical Care"],
-      phone: "+1 (555) 678-9012",
-      isOpen: true,
-      emergencyService: true,
-      image: "/hospital6.jpg"
+  useEffect(() => {
+    async function loadHospitals() {
+      try {
+        const res = await fetch("/api/hospitals");
+        if (res.ok) {
+          const data: HospitalWithDetails[] = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setClinics(data.map(hospitalToClinic));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load hospitals, using mock data:", err);
+      }
     }
-  ]);
+    loadHospitals();
+  }, []);
 
   const departments = ["All Departments", "General Medicine", "Emergency", "Cardiology", "Pediatrics", "Dermatology", "Orthopedics", "Neurology", "Surgery", "ICU", "Family Medicine", "Women's Health", "Trauma", "Critical Care"];
 
@@ -167,7 +132,7 @@ export default function ClinicsPage() {
         {/* Search and Filters */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative w-full flex-grow">
+            <div className="relative w-full grow">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5 text-slate-400">
                   <circle cx="11" cy="11" r="8" strokeWidth="2.5"/>
@@ -228,7 +193,7 @@ export default function ClinicsPage() {
         {/* Clinics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           {filteredClinics.map((clinic) => (
-            <div key={clinic.id} className={`bg-white rounded-[2rem] border overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${!clinic.isOpen ? 'border-slate-200 opacity-80 backdrop-grayscale' : 'border-slate-100 shadow-sm'}`}>
+            <div key={clinic.id} className={`bg-white rounded-4xl border overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${!clinic.isOpen ? 'border-slate-200 opacity-80 backdrop-grayscale' : 'border-slate-100 shadow-sm'}`}>
               
               <div className="relative h-40 bg-slate-100 w-full flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-slate-800/10"></div>
@@ -249,7 +214,7 @@ export default function ClinicsPage() {
                 </div>
               </div>
 
-              <div className="p-6 flex flex-col flex-grow">
+              <div className="p-6 flex flex-col grow">
                 <h3 className="text-lg font-black text-slate-800 tracking-tight leading-tight mb-1">{clinic.name}</h3>
                 <p className="text-xs font-bold text-slate-500 mb-4 line-clamp-1">{clinic.address}</p>
 
@@ -264,7 +229,7 @@ export default function ClinicsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-4 flex-grow mb-6">
+                <div className="space-y-4 grow mb-6">
                   <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Est. Wait Time</span>
                     <span className={`text-xs font-black px-2 py-0.5 rounded-md ${

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import './page.css';
+import supabase from '@/app/lib/api/supabase';
 
 interface FormData {
   patientName: string;
@@ -158,7 +159,7 @@ export default function AppointmentsPage() {
             </p>
           </div>
           
-          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-blue-50 items-center justify-center text-blue-600 border border-blue-100 shadow-sm flex-shrink-0">
+          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-blue-50 items-center justify-center text-blue-600 border border-blue-100 shadow-sm shrink-0">
              <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-10 md:h-10">
                 <circle cx="50" cy="50" r="45" fill="#3b82f6" opacity="0.1"/>
                 <circle cx="50" cy="50" r="35" fill="#3b82f6" opacity="0.2"/>

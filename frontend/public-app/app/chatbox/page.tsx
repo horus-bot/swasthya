@@ -233,13 +233,13 @@ function ChatContent() {
 
   return (
     <main className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-800">
-      <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full h-[100dvh] shadow-2xl bg-white overflow-hidden relative">
+      <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full h-dvh shadow-2xl bg-white overflow-hidden relative">
         
         {/* Modern Header with Glassmorphism */}
         <header className="bg-white/90 backdrop-blur-xl border-b border-indigo-50 p-6 flex items-center justify-between sticky top-0 z-20 shadow-sm transition-all duration-300">
           <div className="flex items-center gap-5">
             <div className="relative group">
-              <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 transition-all duration-300 transform group-hover:scale-105">
+              <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 transition-all duration-300 transform group-hover:scale-105">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                 </svg>
@@ -247,7 +247,7 @@ function ChatContent() {
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-[3px] border-white shadow-sm animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 tracking-tight">MediBot Plus</h1>
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-violet-600 tracking-tight">MediBot Plus</h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="flex w-2 h-2 bg-emerald-500 rounded-full"></span>
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Always Online</p>
@@ -308,7 +308,7 @@ function ChatContent() {
                   <div
                     className={`px-6 py-4 rounded-3xl shadow-sm border text-[15px] md:text-base leading-relaxed tracking-wide ${
                       message.isUser
-                        ? 'bg-gradient-to-tr from-indigo-600 to-violet-600 text-white rounded-tr-sm border-transparent shadow-indigo-200'
+                        ? 'bg-linear-to-tr from-indigo-600 to-violet-600 text-white rounded-tr-sm border-transparent shadow-indigo-200'
                         : 'bg-white text-slate-700 border-slate-100 rounded-tl-sm shadow-slate-100'
                     }`}
                   >
@@ -348,7 +348,7 @@ function ChatContent() {
           <div className="flex items-end gap-3 max-w-5xl mx-auto">
              <button
                 onClick={toggleListening}
-                className={`p-4 rounded-2xl transition-all duration-200 flex-shrink-0 border-2 ${
+                className={`p-4 rounded-2xl transition-all duration-200 shrink-0 border-2 ${
                   isListening 
                     ? 'bg-red-50 border-red-100 text-red-500 shadow-lg shadow-red-100 scale-105' 
                     : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-white hover:border-indigo-100 hover:text-indigo-500 hover:shadow-md'
@@ -368,7 +368,7 @@ function ChatContent() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your health question here..."
-                className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 resize-none min-h-[60px] max-h-[160px] text-slate-700 placeholder-slate-400 font-medium scrollbar-hide outline-none"
+                className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 resize-none min-h-15 max-h-40 text-slate-700 placeholder-slate-400 font-medium scrollbar-hide outline-none"
                 rows={1}
                 disabled={isLoading}
               />
@@ -377,7 +377,7 @@ function ChatContent() {
             <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || isLoading}
-              className={`p-4 rounded-2xl flex-shrink-0 transition-all duration-200 shadow-lg ${
+              className={`p-4 rounded-2xl shrink-0 transition-all duration-200 shadow-lg ${
                 !input.trim() || isLoading
                   ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none border-2 border-slate-100'
                   : 'bg-indigo-600 text-white shadow-indigo-600/30 hover:bg-indigo-700 hover:scale-105 active:scale-95'
@@ -403,8 +403,8 @@ function ChatContent() {
       
       {/* Background decoration */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-indigo-300/20 rounded-full blur-[100px] mix-blend-multiply"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-violet-300/20 rounded-full blur-[120px] mix-blend-multiply"></div>
+        <div className="absolute top-[-10%] right-[-5%] w-125 h-125 bg-indigo-300/20 rounded-full blur-[100px] mix-blend-multiply"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-150 h-150 bg-violet-300/20 rounded-full blur-[120px] mix-blend-multiply"></div>
       </div>
     </main>
   );

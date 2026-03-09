@@ -1,57 +1,78 @@
 "use client";
+import { useState, useEffect } from 'react';
 import { AlertTriangle, Info, ShieldAlert, ThermometerSun, Zap, BellRing, Clock } from 'lucide-react';
+import supabase from '@/app/lib/api/supabase';
+import type { Notification as DBNotification } from '@/app/types/database';
+
+interface Alert {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  time: string;
+  icon: any;
+  color: string;
+  lightColor: string;
+  borderColor: string;
+  textColor: string;
+}
+
+function timeAgo(dateStr: string | null): string {
+  if (!dateStr) return 'Recently';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hours ago`;
+  return `${Math.floor(hrs / 24)} days ago`;
+}
+
+function mapDbToAlert(n: DBNotification, idx: number): Alert {
+  const typeName = n.notification_type?.type_name?.toLowerCase() ?? 'system';
+  const styleMap: Record<string, { icon: any; color: string; lightColor: string; borderColor: string; textColor: string; type: string }> = {
+    emergency: { icon: ThermometerSun, color: "bg-rose-500", lightColor: "bg-rose-50", borderColor: "border-rose-200", textColor: "text-rose-700", type: "critical" },
+    health: { icon: ShieldAlert, color: "bg-amber-500", lightColor: "bg-amber-50", borderColor: "border-amber-200", textColor: "text-amber-700", type: "warning" },
+    appointment: { icon: Info, color: "bg-blue-500", lightColor: "bg-blue-50", borderColor: "border-blue-200", textColor: "text-blue-700", type: "info" },
+    system: { icon: Zap, color: "bg-slate-500", lightColor: "bg-slate-50", borderColor: "border-slate-200", textColor: "text-slate-700", type: "info" },
+  };
+  const style = styleMap[typeName] ?? styleMap['system'];
+  return {
+    id: idx + 1,
+    type: style.type,
+    title: n.title ?? 'Alert',
+    message: n.message ?? '',
+    time: timeAgo(n.created_at),
+    icon: style.icon,
+    color: style.color,
+    lightColor: style.lightColor,
+    borderColor: style.borderColor,
+    textColor: style.textColor,
+  };
+}
 
 export default function AlertsPage() {
-  const activeAlerts = [
-    {
-      id: 1,
-      type: "critical",
-      title: "Severe Heatwave Warning",
-      message: "Temperatures expected to reach 42°C in Chennai today. Avoid outdoor activities between 12 PM and 4 PM. Stay hydrated.",
-      time: "2 hours ago",
-      icon: ThermometerSun,
-      color: "bg-rose-500",
-      lightColor: "bg-rose-50",
-      borderColor: "border-rose-200",
-      textColor: "text-rose-700"
-    },
-    {
-      id: 2,
-      type: "warning",
-      title: "Flu Case Surge Detected",
-      message: "A 15% increase in viral fever cases reported in your locality. Maintain hand hygiene and wear a mask in crowded areas.",
-      time: "5 hours ago",
-      icon: ShieldAlert,
-      color: "bg-amber-500",
-      lightColor: "bg-amber-50",
-      borderColor: "border-amber-200",
-      textColor: "text-amber-700"
-    },
-    {
-      id: 3,
-      type: "info",
-      title: "Upcoming Vaccination Drive",
-      message: "Free COVID-19 booster shots available at Central Government Hospital this weekend from 9 AM to 5 PM.",
-      time: "1 day ago",
-      icon: Info,
-      color: "bg-blue-500",
-      lightColor: "bg-blue-50",
-      borderColor: "border-blue-200",
-      textColor: "text-blue-700"
-    },
-    {
-      id: 4,
-      type: "info",
-      title: "System Maintenance",
-      message: "Swasthya servers will be down for 30 minutes tonight at 2:00 AM for routine upgrades.",
-      time: "2 days ago",
-      icon: Zap,
-      color: "bg-slate-500",
-      lightColor: "bg-slate-50",
-      borderColor: "border-slate-200",
-      textColor: "text-slate-700"
+  const [activeAlerts, setActiveAlerts] = useState<Alert[]>([]);
+
+  useEffect(() => {
+    async function loadAlerts() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const res = await fetch(`/api/notifications?userId=${user.id}`);
+          if (res.ok) {
+            const dbNotifications: DBNotification[] = await res.json();
+            if (dbNotifications.length > 0) {
+              setActiveAlerts(dbNotifications.map(mapDbToAlert));
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading alerts:', err);
+      }
     }
-  ];
+    loadAlerts();
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 md:py-10 px-3 sm:px-6 lg:px-8 font-sans pb-28 md:pb-12 overflow-hidden">
@@ -74,7 +95,7 @@ export default function AlertsPage() {
             </p>
           </div>
           
-          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-amber-50 items-center justify-center text-amber-600 border border-amber-100 shadow-sm flex-shrink-0 animate-pulse">
+          <div className="relative z-10 hidden sm:flex w-14 md:w-16 h-14 md:h-16 rounded-full bg-amber-50 items-center justify-center text-amber-600 border border-amber-100 shadow-sm shrink-0 animate-pulse">
              <BellRing size={28} strokeWidth={2.5} />
           </div>
         </div>

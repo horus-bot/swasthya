@@ -4,19 +4,55 @@ import { useState, useRef, useEffect } from "react";
 import { Bell, Info, AlertTriangle, FileText, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
-const MOCK_NOTIFICATIONS = [
-  { id: 1, type: "alert", title: "Upcoming Appointment", message: "Dr. Sharma at 10:00 AM tomorrow.", time: "2h ago", isRead: false },
-  { id: 2, type: "info", title: "Report Ready", message: "Your blood test results are available.", time: "5h ago", isRead: false },
-  { id: 3, type: "success", title: "Vaccination Scheduled", message: "COVID-19 Booster on 15th March.", time: "1d ago", isRead: true },
-  { id: 4, type: "system", title: "Profile Update", message: "Please update your emergency contact details.", time: "2d ago", isRead: true },
-];
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
 
 export default function NotificationDropdown({ triggerClass, dotBorderColor = "border-white" }: { triggerClass?: string, dotBorderColor?: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter(n => !n.isRead && !n.is_read).length;
+
+  // Load notifications from Supabase
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const { default: supabase } = await import("@/app/lib/api/supabase");
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        setUserId(user.id);
+
+        const res = await fetch(`/api/notifications?userId=${user.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setNotifications(
+              data.map((n: any) => ({
+                id: n.id,
+                type: n.notification_type?.type_name?.toLowerCase() ?? "info",
+                title: n.title ?? "Notification",
+                message: n.message ?? "",
+                time: n.created_at ? timeAgo(n.created_at) : "",
+                isRead: n.is_read,
+              }))
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load notifications:", err);
+      }
+    }
+    loadNotifications();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -28,8 +64,19 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const markAllRead = () => {
+  const markAllRead = async () => {
     setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    if (userId) {
+      try {
+        await fetch("/api/notifications", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ markAll: true, userId }),
+        });
+      } catch (err) {
+        console.error("Failed to mark all read:", err);
+      }
+    }
   };
 
   const getIcon = (type: string) => {
@@ -54,7 +101,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
       </button>
 
       {isOpen && (
-        <div className="absolute top-[120%] right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-[100] animate-in slide-in-from-top-2 duration-200 origin-top-right text-left">
+        <div className="absolute top-[120%] right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-100 animate-in slide-in-from-top-2 duration-200 origin-top-right text-left">
           <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50/80 backdrop-blur-sm">
             <h3 className="font-bold text-slate-800 text-sm tracking-wide">Notifications</h3>
             {unreadCount > 0 && (
@@ -71,7 +118,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
               <div className="flex flex-col">
                 {notifications.map((notif) => (
                   <div key={notif.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50/80 transition-colors flex gap-4 ${notif.isRead ? 'opacity-75' : 'bg-teal-50/20'}`}>
-                    <div className={`mt-0.5 h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-slate-100' : 'bg-white shadow-sm border border-slate-100'}`}>
+                    <div className={`mt-0.5 h-9 w-9 rounded-full flex items-center justify-center shrink-0 ${notif.isRead ? 'bg-slate-100' : 'bg-white shadow-sm border border-slate-100'}`}>
                       {getIcon(notif.type)}
                     </div>
                     <div className="flex-1">
@@ -82,7 +129,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
                       <p className="text-xs text-slate-500 leading-relaxed font-medium">{notif.message}</p>
                     </div>
                     {!notif.isRead && (
-                      <div className="w-2 h-2 bg-teal-500 rounded-full mt-2.5 flex-shrink-0 shadow-sm shadow-teal-500/30"></div>
+                      <div className="w-2 h-2 bg-teal-500 rounded-full mt-2.5 shrink-0 shadow-sm shadow-teal-500/30"></div>
                     )}
                   </div>
                 ))}
@@ -91,7 +138,7 @@ export default function NotificationDropdown({ triggerClass, dotBorderColor = "b
           </div>
 
           <div className="p-3 border-t border-slate-100 bg-slate-50/50 text-center">
-            <Link href="/notification" onClick={() => setIsOpen(false)} className="text-[11px] font-[900] text-slate-500 hover:text-teal-600 transition-colors uppercase tracking-widest inline-flex items-center gap-1 active:scale-95">
+            <Link href="/notification" onClick={() => setIsOpen(false)} className="text-[11px] font-black text-slate-500 hover:text-teal-600 transition-colors uppercase tracking-widest inline-flex items-center gap-1 active:scale-95">
               View All History
             </Link>
           </div>
