@@ -1,34 +1,35 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { Home, BarChart3, AlertTriangle, Calendar, User } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, BarChart3, Activity, Calendar, User, MapPin } from "lucide-react";
 
-function NavTab({ icon: Icon, label, active, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) {
+function NavTab({ icon: Icon, label, href, active }: { icon: any, label: string, href: string, active?: boolean }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1 group px-2">
-      <div className={`transition-all duration-300 p-1 ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-400'}`}>
-        <Icon size={24} fill={active ? "currentColor" : "none"} strokeWidth={active ? 2.5 : 2} />
+    <Link 
+      href={href}
+      className="flex flex-col items-center justify-center flex-1 py-3 px-1 transition-all duration-300 ease-in-out relative group"
+    >
+      <div className={`flex flex-col items-center justify-center w-full px-2 py-1.5 rounded-xl transition-colors ${active ? 'bg-teal-50 text-teal-700' : 'text-slate-400 group-hover:bg-slate-50 group-hover:text-teal-500'}`}>
+        <Icon size={22} fill={active ? "currentColor" : "none"} strokeWidth={active ? 2.5 : 2} />
+        <span className={`text-[10px] font-bold mt-1 tracking-wide ${active ? 'text-teal-700' : 'text-slate-400'}`}>{label}</span>
       </div>
-      <span className={`text-[10px] font-bold ${active ? 'text-teal-600' : 'text-slate-400'}`}>{label}</span>
-      {active && <div className="w-1 h-1 bg-teal-600 rounded-full mt-0.5"></div>}
-    </button>
+    </Link>
   );
 }
 
 export default function BottomNav() {
-  const router = useRouter();
   const pathname = usePathname();
 
-  // Hide bottom nav on specific pages if needed, for example chatbox
   if (pathname === '/chatbox') return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around items-center py-4 px-2 z-50">
-      <NavTab icon={Home} label="Home" active={pathname === '/home' || pathname === '/'} onClick={() => router.push('/home')} />
-      <NavTab icon={BarChart3} label="Analytics" active={pathname === '/reports'} onClick={() => router.push('/reports')} />
-      <NavTab icon={AlertTriangle} label="Alerts" active={pathname === '/tracker'} onClick={() => router.push('/tracker')} />
-      <NavTab icon={Calendar} label="Appts" active={pathname === '/appointments'} onClick={() => router.push('/appointments')} />
-      <NavTab icon={User} label="Profile" active={pathname === '/profile'} onClick={() => router.push('/profile')} />
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-between items-center px-1 pb-safe z-50 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
+      <NavTab icon={Home} label="Home" href="/home" active={pathname === '/home' || pathname === '/'} />
+      <NavTab icon={BarChart3} label="Analytics" href="/reports" active={pathname.startsWith('/reports')} />
+      <NavTab icon={Activity} label="Alerts" href="/tracker" active={pathname.startsWith('/tracker')} />
+      <NavTab icon={Calendar} label="Appts" href="/appointments" active={pathname.startsWith('/appointments')} />
+      <NavTab icon={User} label="Profile" href="/profile" active={pathname.startsWith('/profile')} />
     </nav>
   );
 }

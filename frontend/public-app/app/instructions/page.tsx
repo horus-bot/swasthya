@@ -2,7 +2,7 @@
 
 export default function NotificationPage() {
   return (
-    <main className="p-4 sm:p-6 max-w-6xl mx-auto space-y-10">
+    <main className="p-4 sm:p-6 max-w-6xl mx-auto space-y-10 pb-28 md:pb-12">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Alerts</h1>
