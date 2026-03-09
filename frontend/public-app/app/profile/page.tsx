@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Droplets, ArrowRight, HeartPulse, Activity, CalendarCheck, Phone, MapPin, FileText, AlertCircle, ShieldCheck, Mail, Ruler, Weight, Dna } from "lucide-react";
+import { QRCodeSVG } from 'qrcode.react';
 
 /* ------------------ Mock Data ------------------ */
 
@@ -17,6 +18,28 @@ const vitalsData = [
 
 export default function ProfilePage() {
   const [isOpen, setIsOpen] = useState(false);
+  const [qrUrl, setQrUrl] = useState("");
+
+  useEffect(() => {
+    // Collect specific profile basic and health info for the QR Code
+    const profileData = {
+      name: "Keva Solankure",
+      age: 27,
+      gender: "Female",
+      phone: "+91 98765 43210",
+      email: "keva.s@email.com",
+      bloodType: "A Positive (A+)",
+      bmi: "21.4 (Normal)",
+      allergies: ["Dust Mites", "Pollen"],
+      disabilities: "None"
+    };
+    
+    // Base64 Encode the JSON payload string to pass via Query Param securely
+    const encoded = btoa(JSON.stringify(profileData));
+    
+    // Dynamically fetch exact domain origin on client side
+    setQrUrl(`${window.location.origin}/download-profile?data=${encoded}`);
+  }, []);
 
   return (
     <main className="min-h-screen bg-slate-50/50 pb-32">
@@ -61,6 +84,28 @@ export default function ProfilePage() {
           >
             Update Profile <ArrowRight size={16} />
           </button>
+
+          {/* Digital Health QR Code Card */}
+          {qrUrl && (
+            <div className="mt-10 w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-teal-500/10 border border-teal-100 p-6 sm:p-8 flex flex-col items-center text-center relative overflow-hidden group animate-in slide-in-from-bottom-4">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full blur-3xl -mx-10 -my-10 pointer-events-none"></div>
+              
+              <h3 className="text-lg font-black text-slate-800 tracking-tight z-10">Digital Health Card</h3>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1 mb-6 z-10">Scan to Download PDF</p>
+              
+              <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 mb-6 z-10 group-hover:scale-[1.03] transition-transform duration-500">
+                <QRCodeSVG value={qrUrl} size={150} level="H" fgColor="#0f172a" />
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] font-bold text-teal-600 bg-teal-50 px-4 py-2 rounded-full z-10 border border-teal-100/50">
+                <ShieldCheck size={14} /> Private Encrypted Payload
+              </div>
+              
+              <p className="text-[10px] font-bold text-slate-400 mt-4 leading-relaxed z-10 w-3/4">
+                Scan this code with any camera to instantly download a medical profile PDF containing your basic & health details.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -249,22 +294,104 @@ function getAlert(type: string, value: number) {
 
 function EditProfileModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl p-6 w-[90%] max-w-md animate-in zoom-in-95 duration-300">
-        <h2 className="font-semibold text-lg mb-4">Edit Profile</h2>
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 animate-in fade-in duration-300">
+      <div className="bg-white rounded-t-[2rem] sm:rounded-3xl p-6 sm:p-8 w-full max-w-lg md:max-w-2xl animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-500 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        
+        {/* Decorative Top Bar for Mobile */}
+        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden pointer-events-none"></div>
 
-        <div className="space-y-3">
-          <input className="w-full border p-2 rounded" placeholder="Name" />
-          <input className="w-full border p-2 rounded" placeholder="Age" />
-          <input className="w-full border p-2 rounded" placeholder="Blood Group" />
+        {/* Modal Header */}
+        <div className="flex items-start justify-between mb-8">
+          <div className="flex gap-4 items-center">
+            <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-100 shadow-sm shrink-0">
+               <User size={28} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h2 className="font-black text-2xl text-slate-800 tracking-tight leading-tight">Edit Profile</h2>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Update Core Information</p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="w-10 h-10 bg-slate-50 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full flex items-center justify-center transition-all active:scale-95"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
         </div>
 
-        <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-4 py-2 text-gray-600">
+        {/* Form Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+          
+          {/* Identity Section */}
+          <div className="space-y-4 md:col-span-2">
+             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2 mb-3">Identity</h3>
+             
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input type="text" defaultValue="Keva Solankure" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all font-bold text-sm" />
+                  </div>
+               </div>
+               <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input type="email" defaultValue="keva.s@email.com" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all font-bold text-sm" />
+                  </div>
+               </div>
+             </div>
+          </div>
+
+          {/* Biometrics Section */}
+          <div className="space-y-4 md:col-span-2 mt-2">
+             <h3 className="text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 pb-2 mb-3">Biometrics</h3>
+             
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+               <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Blood Type</label>
+                  <div className="relative">
+                    <Droplets className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400 w-4 h-4" />
+                    <select className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-rose-500/30 focus:border-rose-500 transition-all font-bold text-sm appearance-none">
+                      <option value="A+">A Positive (A+)</option>
+                      <option value="O+">O Positive (O+)</option>
+                      <option value="B+">B Positive (B+)</option>
+                    </select>
+                  </div>
+               </div>
+               <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Height (cm)</label>
+                  <div className="relative">
+                    <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input type="number" defaultValue="168" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all font-bold text-sm" />
+                  </div>
+               </div>
+               <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Weight (kg)</label>
+                  <div className="relative">
+                    <Weight className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input type="number" defaultValue="62" className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl pl-11 pr-4 py-3.5 outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all font-bold text-sm" />
+                  </div>
+               </div>
+             </div>
+          </div>
+
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-slate-100">
+          <button 
+            onClick={onClose} 
+            className="w-full sm:w-auto px-6 py-4 sm:py-3.5 text-slate-500 font-bold bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all active:scale-95"
+          >
             Cancel
           </button>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded">
-            Save
+          <button 
+            onClick={onClose} 
+            className="w-full sm:w-auto px-10 py-4 sm:py-3.5 bg-teal-500 text-white font-black tracking-widest uppercase rounded-2xl hover:bg-teal-600 shadow-lg shadow-teal-500/30 transition-all active:scale-95 flex justify-center"
+          >
+            Save Changes
           </button>
         </div>
       </div>

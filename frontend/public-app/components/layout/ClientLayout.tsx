@@ -13,7 +13,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const hideLayout = pathname === "/" || pathname === "/home";
+  const hideLayout = pathname === "/";
 
   return (
     <LanguageProvider>
@@ -26,7 +26,7 @@ export default function ClientLayout({
       <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col overflow-x-hidden">
         {!hideLayout && <Header />}
 
-        <main className="flex-grow w-full h-full flex flex-col">
+        <main className={`flex-grow w-full h-full flex flex-col ${!hideLayout ? 'pt-16' : ''}`}>
           {children}
         </main>
 
