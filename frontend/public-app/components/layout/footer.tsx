@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-300 mt-auto pt-8 pb-24 md:pb-28 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-        
+
         {/* Left Side: Logo & Social Icons */}
         <div className="flex items-center gap-8">
           <div className="flex items-center text-lg font-bold text-white tracking-wide">
@@ -32,25 +32,25 @@ export default function Footer() {
 
         {/* Center/Right Side: Links & Emergency */}
         <div className="flex flex-wrap justify-center md:justify-end items-center gap-x-8 gap-y-4 text-sm font-medium">
-            <Link href="/clinics" className="hover:text-white transition-colors flex items-center group">
-              <MapPin size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Clinics
-            </Link>
-            <Link href="/appointments" className="hover:text-white transition-colors flex items-center group">
-              <Calendar size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Appointments
-            </Link>
-            <Link href="/reports" className="hover:text-white transition-colors flex items-center group">
-              <BarChart size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Reports
-            </Link>
-            <Link href="/tracker" className="hover:text-white transition-colors flex items-center group">
-              <Map size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Tracker
-            </Link>
-            <div className="hidden md:block h-4 w-px bg-slate-700 mx-2"></div>
-            <div className="flex items-center text-rose-400 font-bold bg-white/5 px-4 py-1.5 rounded-full border border-rose-500/20 shadow-sm backdrop-blur-sm">
-               <Phone size={14} className="mr-2" /> 102 / 108
-            </div>
-            <Link href="/instructions" className="text-rose-400/80 hover:text-rose-400 transition-colors ml-2 hidden sm:flex items-center text-xs group">
-              <AlertTriangle size={14} className="mr-1.5 text-rose-500/50 group-hover:text-rose-400 transition-colors" /> Guidelines
-            </Link>
+          <Link href="/clinics" className="hover:text-white transition-colors flex items-center group">
+            <MapPin size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Clinics
+          </Link>
+          <Link href="/appointments" className="hover:text-white transition-colors flex items-center group">
+            <Calendar size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Appointments
+          </Link>
+          <Link href="/reports" className="hover:text-white transition-colors flex items-center group">
+            <BarChart size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Reports
+          </Link>
+          <Link href="/tracker" className="hover:text-white transition-colors flex items-center group">
+            <Map size={16} className="mr-2 text-slate-500 group-hover:text-teal-400 transition-colors" /> Tracker
+          </Link>
+          <div className="hidden md:block h-4 w-px bg-slate-700 mx-2"></div>
+          <div className="flex items-center text-rose-400 font-bold bg-white/5 px-4 py-1.5 rounded-full border border-rose-500/20 shadow-sm backdrop-blur-sm">
+            <Phone size={14} className="mr-2" /> 102 / 108
+          </div>
+          <Link href="/instructions" className="text-rose-400/80 hover:text-rose-400 transition-colors ml-2 hidden sm:flex items-center text-xs group">
+            <AlertTriangle size={14} className="mr-1.5 text-rose-500/50 group-hover:text-rose-400 transition-colors" /> Guidelines
+          </Link>
         </div>
 
       </div>

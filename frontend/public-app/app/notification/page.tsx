@@ -269,7 +269,7 @@ export default function NotificationsPage() {
                     <div className="flex-1 min-w-0">
                       
                       {/* Top Header Row of the Notification */}
-                      <div className="flex items-start justify-between gap-2 mb-1md:mb-1.5">
+                      <div className="flex items-start justify-between gap-2 mb-1 md:mb-1.5">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 md:gap-3 flex-wrap">
                           <h3 className={`text-base md:text-lg transition-colors leading-tight ${!notification.isRead ? 'font-[900] text-slate-800' : 'font-bold text-slate-700'}`}>
                             {notification.title}

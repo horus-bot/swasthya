@@ -133,31 +133,9 @@ export default function HomePage() {
 
   return (
     <div ref={mainRef} className="min-h-screen bg-white font-sans text-slate-900 pb-24">
-      {/* HEADER */}
-      <header className="px-6 pt-6 pb-3 flex justify-between items-center sticky top-0 bg-[#0E9488] z-40 shadow-md rounded-b-[2rem] lg:rounded-none">
-        <div className="animate-down flex items-center gap-3">
-          <img src="/logo.svg" alt="Swasthya Logo" className="w-10 h-10 object-contain" />
-          <div className="flex flex-col justify-center">
-            <div className="flex items-center gap-1.5 text-teal-100 font-bold text-[10px] tracking-[0.2em] uppercase mb-0.5 ml-0.5">
-              <MapPin size={10} className="text-white" />
-              Chennai, TN
-            </div>
-            <h1 className="text-3xl font-[900] text-white tracking-tighter leading-none shadow-sm">Swasthya</h1>
-          </div>
-        </div>
-        <div className="flex gap-2 animate-down">
-          <button className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm border border-white/10">
-            <Search size={22} />
-          </button>
-          <NotificationDropdown 
-            triggerClass="relative p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm border border-white/10" 
-            dotBorderColor="border-[#0E9488]" 
-          />
-        </div>
-      </header>
 
       {/* SCROLLABLE CONTENT */}
-      <main className="px-5 space-y-8 pt-4 lg:pt-8 max-w-7xl mx-auto w-full pb-32">
+      <main className="px-5 space-y-8 pt-24 lg:pt-28 max-w-7xl mx-auto w-full pb-32">
 
         {/* TOP SECTION: Weather */}
         <div className="animate-scale w-full">
@@ -230,7 +208,7 @@ export default function HomePage() {
           {/* QUICK SERVICES GRID */}
           <div className="space-y-4">
             <h3 className="text-xl font-black text-slate-800 px-1">Quick Access</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <MobileServiceCard
                 href="/appointments"
                 title="Book Doctor"
@@ -340,7 +318,7 @@ export default function HomePage() {
 
 function MobileServiceCard({ href, title, icon: Icon, iconColor, bgColor }: { href: string; title: string; icon: any; iconColor: string; bgColor: string }) {
   return (
-    <Link href={href} className="animate-scale bg-white/60 backdrop-blur-xl border border-slate-100 p-5 rounded-[2rem] flex flex-col justify-between gap-6 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 hover:border-slate-200 transition-all duration-500 group relative overflow-hidden">
+    <Link href={href} className="animate-scale bg-white/60 backdrop-blur-xl border border-slate-100 p-4 sm:p-5 rounded-[2rem] flex flex-col justify-between gap-4 sm:gap-6 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 hover:border-slate-200 transition-all duration-500 group relative overflow-hidden">
       {/* Decorative gradient blob */}
       <div className={`absolute -right-6 -top-6 w-24 h-24 ${bgColor} rounded-full blur-2xl opacity-50 group-hover:scale-150 transition-transform duration-700 pointer-events-none`}></div>
 
@@ -407,7 +385,7 @@ function WeatherCardCompact({ weather }: { weather: any }) {
   return (
     <div
       ref={cardRef}
-      className={`${theme.bg} border ${theme.text} p-6 rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between shadow-xl shadow-blue-500/10 relative overflow-hidden group transition-all duration-500 cursor-pointer hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] w-full`}
+      className={`${theme.bg} border ${theme.text} p-5 sm:p-6 rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between shadow-xl shadow-blue-500/10 relative overflow-hidden group transition-all duration-500 cursor-pointer hover:shadow-2xl hover:-translate-y-1 active:scale-[0.98] w-full`}
     >
       {/* FIXED BACKGROUND GLOWS */}
       <div className={`absolute -top-12 -right-12 w-32 h-32 ${theme.glow} rounded-full blur-3xl pointer-events-none`}></div>
