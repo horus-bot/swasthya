@@ -1,0 +1,61 @@
+year,zone,zone_name,area,cases,source
+2025,Tamil Nadu,T.N.,Tamil Nadu,15796.0,The Hindu
+2025,Tamil Nadu,T.N.,Tamil Nadu,8.0,The Hindu
+2021,Tamil Nadu,T.N.,Tamil Nadu,6039.0,The Hindu
+2021,Tamil Nadu,T.N.,Tamil Nadu,8.0,The Hindu
+2022,Tamil Nadu,T.N.,Tamil Nadu,6430.0,The Hindu
+2022,Tamil Nadu,T.N.,Tamil Nadu,8.0,The Hindu
+2023,Tamil Nadu,T.N.,Tamil Nadu,9121.0,The Hindu
+2023,Tamil Nadu,T.N.,Tamil Nadu,12.0,The Hindu
+2025,Tamil Nadu,T.N.,Tamil Nadu,27.0,The Hindu
+2025,Tamil Nadu,T.N.,Tamil Nadu,13.0,The Hindu
+2024,Tamil Nadu,Tamil Nadu,Tamil Nadu,4478.0,Union Ministry of Health and Family Welfare
+2025,Tamil Nadu,Tamil Nadu,Tamil Nadu,8558.0,Union Ministry of Health and Family Welfare
+2025,Tamil Nadu,Tamil Nadu,Tamil Nadu,3023.0,Union Ministry of Health and Family Welfare
+2024,Chennai,Chennai,Chennai,142.0,Unknown
+2024,Chennai,Chennai,Chennai,118.0,Unknown
+2025,Tamil Nadu,Chennai,Tamil Nadu,15796.0,DTNEXT
+2024,Chennai,Chennai,Adyar,381.0,Greater Chennai Corporation (GCC)
+2024,Chennai,Chennai,Shollinganallur,63.0,Greater Chennai Corporation (GCC)
+2023,Chennai,Chennai,Adyar,250.0,Greater Chennai Corporation (GCC)
+2024,Chennai,Chennai,Adyar,111.0,Greater Chennai Corporation (GCC)
+2025,Chennai,Chennai,Adyar,522.0,Greater Chennai Corporation (GCC)
+2025,Chennai,Chennai,Shollinganallur,63.0,Greater Chennai Corporation (GCC)
+2024,Chennai,Chennai,Chennai,142.0,Source1
+2024,Chennai,Chennai,Chennai,118.0,Source2
+2024,Chennai,Chennai,Chennai,381.0,IANS
+2025,Chennai,Chennai,Chennai,522.0,IANS
+2023,Chennai,Chennai,Adyar,250.0,IANS
+2024,Chennai,Chennai,Adyar,250.0,IANS
+2025,Chennai,Chennai,Adyar,111.0,IANS
+2025,Chennai,Chennai,Shollinganallur,63.0,IANS
+2024,Chennai,Chennai,Chennai,1549.0,The New Indian Express
+2023,Tamil Nadu,Tamil Nadu,Tamil Nadu,9121.0,Directorate of Public Health
+2020,Tamil Nadu,Tamil Nadu,Tamil Nadu,,Not mentioned
+2024,Tamil Nadu,Tamil Nadu,Tamil Nadu,11743.0,Directorate of Public Health
+2025,Chennai,Greater Chennai Corporation,city,480.0,GCC
+2024,Royapuram,Royapuram,Royapuram,142.0,Chennai AQI | Weather in Chennai | Bank Holidays in Chennai | Public Holidays in Chennai
+2024,Royapuram,Royapuram,Royapuram,118.0,Chennai AQI | Weather in Chennai | Bank Holidays in Chennai | Public Holidays in Chennai
+2023,Adyar,Adyar,Adyar,250.0,"In 2023 and 2024, Adyar topped the city with over 250 cases each year"
+2024,Adyar,Adyar,Adyar,250.0,"In 2023 and 2024, Adyar topped the city with over 250 cases each year"
+2025,Adyar,Adyar,Adyar,111.0,"Chennai Prepares for Peak Dengue Season; Adyar, Shollinganallur Lead in Cases"
+2025,Shollinganallur,Shollinganallur,Shollinganallur,63.0,"Chennai Prepares for Peak Dengue Season; Adyar, Shollinganallur Lead in Cases"
+2025,Chennai,Chennai,Chennai,1633.0,Greater Chennai Corporation
+2025,Tamil Nadu,Tamil Nadu,Chennai,20866.0,The Assam Tribune
+2025,Kerala,Kerala,Kerala,10239.0,The Assam Tribune
+2025,Andhra Pradesh,Andhra Pradesh,Andhra Pradesh,2384.0,The Assam Tribune
+2025,Telangana,Telangana,Telangana,8139.0,The Assam Tribune
+2025,Karnataka,Karnataka,Karnataka,6759.0,The Assam Tribune
+2024,Tamil Nadu,Tamil Nadu,Tamil Nadu,27378.0,The Assam Tribune
+2023,Tamil Nadu,Tamil Nadu,Tamil Nadu,9121.0,The Assam Tribune
+2022,Tamil Nadu,Tamil Nadu,Tamil Nadu,6430.0,The Assam Tribune
+2021,Tamil Nadu,Tamil Nadu,Tamil Nadu,6039.0,The Assam Tribune
+2025,Tamil Nadu,TN,Chennai,20866.0,Union Health Ministry
+2025,Kerala,Kerala,Kerala,10239.0,Union Health Ministry
+2025,Andhra Pradesh,Andhra Pradesh,Andhra Pradesh,2384.0,Union Health Ministry
+2025,Telangana,Telangana,Telangana,8139.0,Union Health Ministry
+2025,Karnataka,Karnataka,Karnataka,6759.0,Union Health Ministry
+2024,Tamil Nadu,TN,Tamil Nadu,27378.0,Health Department officials
+2023,Tamil Nadu,TN,Tamil Nadu,9121.0,Health Department officials
+2022,Tamil Nadu,TN,Tamil Nadu,6430.0,Health Department officials
+2021,Tamil Nadu,TN,Tamil Nadu,6039.0,Health Department officials

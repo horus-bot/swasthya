@@ -1,0 +1,48 @@
+{
+  "features": [
+    "year",
+    "month",
+    "zone_id",
+    "zone_encoded",
+    "rainfall_mm",
+    "temperature_c",
+    "humidity_percent",
+    "mosquito_index",
+    "prev_month_cases_log"
+  ],
+  "ranges": {
+    "rainfall_mm": {
+      "min": 0.07,
+      "max": 348.93,
+      "mean": 83.69584444444446
+    },
+    "temperature_c": {
+      "min": 24.06,
+      "max": 39.98,
+      "mean": 31.104566666666667
+    },
+    "humidity_percent": {
+      "min": 50.04,
+      "max": 94.94,
+      "mean": 70.78857777777777
+    },
+    "mosquito_index": {
+      "min": 0.231,
+      "max": 0.966,
+      "mean": 0.5428422222222222
+    },
+    "prev_month_cases": {
+      "min": 0.0,
+      "max": 62916.0,
+      "mean": 5417.286666666667
+    },
+    "cases": {
+      "min": 1468.0,
+      "max": 62916.0,
+      "mean": 5841.15
+    }
+  },
+  "caps": {
+    "prev_month_cases": 41169.03999999999
+  }
+}
