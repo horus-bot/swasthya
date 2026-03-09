@@ -232,7 +232,7 @@ export async function runChennaiHealthAgent(input: { message: string; history?: 
 
   const result = await agent.invoke({
     messages: [...history, { role: 'user', content: input.message }],
-    recursionLimit: Number(process.env.LANGGRAPH_RECURSION_LIMIT ?? 100),
+    recursionLimit: Number(process.env.LANGGRAPH_RECURSION_LIMIT ?? 1000000),
   });
 
   const messages = (result.messages || []) as Array<{ _getType?: () => string; content?: unknown; name?: string }>;
