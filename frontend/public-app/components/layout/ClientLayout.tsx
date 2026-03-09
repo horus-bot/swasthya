@@ -6,6 +6,8 @@ import Header from "./header";
 import Footer from "./footer";
 import BottomNav from "./BottomNav";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import ServiceWorkerRegister from "../ServiceWorkerRegister";
+import PWAInstallPrompt from "../PWAInstallPrompt";
 
 export default function ClientLayout({
   children,
@@ -22,6 +24,8 @@ export default function ClientLayout({
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#0f172a" />
       </Head>
       <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col overflow-x-hidden">
         {!hideLayout && <Header />}
@@ -32,6 +36,8 @@ export default function ClientLayout({
 
         {!hideLayout && <Footer />}
         {pathname !== "/" && <BottomNav />}
+        <ServiceWorkerRegister />
+        <PWAInstallPrompt />
       </body>
     </LanguageProvider>
   );
