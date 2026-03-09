@@ -1,0 +1,15 @@
+[
+  {
+    "id": "BK-1773062825517",
+    "createdAt": "2026-03-09T13:27:05.517Z",
+    "status": "confirmed",
+    "name": "Guest User",
+    "phone": "",
+    "email": "",
+    "clinic": "Chennai Community Clinic",
+    "department": "General Medicine",
+    "preferredDate": "2026-03-10",
+    "preferredTime": "10:30 AM",
+    "symptoms": "General consultation"
+  }
+]

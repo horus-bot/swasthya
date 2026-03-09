@@ -9,6 +9,7 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  toolsUsed?: string[];
 }
 
 // Simple markdown-like renderer for structured responses
@@ -76,11 +77,17 @@ function parseInlineMarkdown(text: string): any[] {
 function ChatContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q');
+  const quickPrompts = [
+    'Give me the latest Chennai health news today.',
+    'Book a General Medicine appointment for tomorrow morning in Chennai.',
+    'Plan a medical support setup for a school health camp in Chennai with 400 attendees.',
+    'What dengue and heatwave precautions should Chennai residents follow this week?',
+  ];
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hello! I\'m MediBot, your advanced healthcare assistant. How can I help you today?',
+      text: 'Hello! I\'m MediBot Chennai. I can brief you on Chennai health news, help plan event medical support, and book prototype appointments when you provide the details.',
       isUser: false,
       timestamp: new Date(),
     },
@@ -179,25 +186,39 @@ function ChatContent() {
     setIsLoading(true);
 
     try {
+      // build a lightweight history for the agent
+      const history = messages.map(m => ({ role: m.isUser ? 'user' : 'assistant', content: m.text }));
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userMessage.text }),
+        body: JSON.stringify({ message: userMessage.text, history }),
       });
 
       const data = await response.json();
 
+      let botText = '';
+      if (typeof data.response === 'string') {
+        botText = data.response;
+      } else if (data.response && typeof data.response === 'object') {
+        // Common LangGraph/OpenAI-ish shapes
+        botText = data.response.text || data.response.output || data.response.result || JSON.stringify(data.response);
+      } else {
+        botText = String(data.response ?? '');
+      }
+
       if (response.ok) {
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: data.response,
+          text: botText,
           isUser: false,
           timestamp: new Date(),
+          toolsUsed: Array.isArray(data.toolsUsed) ? data.toolsUsed : [],
         };
         setMessages(prev => [...prev, botMessage]);
-        if (autoSpeak) speak(data.response);
+        if (autoSpeak) speak(botText);
       } else {
         const errorText = data.error || 'Sorry, I encountered an error. Please try again.';
         const errorMessage: Message = {
@@ -219,6 +240,41 @@ function ChatContent() {
       };
       setMessages(prev => [...prev, errorMessage]);
       if (autoSpeak) speak(errorText);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const quickBook = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/book-appointment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Guest User',
+          date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+          time: '10:30 AM',
+          clinic: 'Chennai Community Clinic',
+          department: 'General Medicine',
+          symptoms: 'General consultation',
+        }),
+      });
+      const json = await res.json();
+      const text = json?.booking ? `Booking confirmed: ${json.booking.id}` : (json?.error || 'Booking failed');
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text,
+        isUser: false,
+        timestamp: new Date(),
+        toolsUsed: ['book_chennai_appointment'],
+      };
+      setMessages(prev => [...prev, botMessage]);
+      if (autoSpeak) speak(text);
+    } catch (e) {
+      const botMessage: Message = { id: Date.now().toString(), text: 'Booking error', isUser: false, timestamp: new Date() };
+      setMessages(prev => [...prev, botMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -250,7 +306,7 @@ function ChatContent() {
               <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 tracking-tight">MediBot Plus</h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="flex w-2 h-2 bg-emerald-500 rounded-full"></span>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Always Online</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Chennai Health Agent</p>
               </div>
             </div>
           </div>
@@ -293,6 +349,26 @@ function ChatContent() {
           </div>
         </header>
 
+        <section className="border-b border-slate-100 bg-gradient-to-r from-sky-50 via-white to-emerald-50 px-4 py-4 md:px-8">
+          <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-sky-700">Agent tools</p>
+              <h2 className="mt-1 text-xl font-bold text-slate-800">News briefings, appointment booking, and event medical planning</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {quickPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  onClick={() => sendMessage(prompt)}
+                  className="rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-sky-400 hover:text-sky-700"
+                >
+                  {prompt.length > 48 ? `${prompt.slice(0, 48)}...` : prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 bg-slate-50/50 scroll-smooth custom-scrollbar">
           <AnimatePresence initial={false}>
@@ -321,6 +397,18 @@ function ChatContent() {
                   <span className={`text-[11px] font-semibold mt-2 px-1 ${message.isUser ? 'text-indigo-300' : 'text-slate-400'}`}>
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
+                  {!message.isUser && message.toolsUsed && message.toolsUsed.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {message.toolsUsed.map((toolName) => (
+                        <span
+                          key={`${message.id}-${toolName}`}
+                          className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-700"
+                        >
+                          {toolName.replaceAll('_', ' ')}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -345,6 +433,26 @@ function ChatContent() {
 
         {/* Input Area */}
         <div className="bg-white p-6 border-t border-slate-100 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] relative z-10">
+          <div className="mx-auto mb-4 flex max-w-5xl flex-wrap gap-2">
+            <button
+              onClick={() => sendMessage('Give me today\'s Chennai public health highlights.')}
+              className="rounded-full bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-100"
+            >
+              Chennai alerts
+            </button>
+            <button
+              onClick={() => sendMessage('Help me plan a medical desk for an outdoor event in Chennai.')}
+              className="rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+            >
+              Event planner
+            </button>
+            <button
+              onClick={quickBook}
+              className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+            >
+              Quick appointment
+            </button>
+          </div>
           <div className="flex items-end gap-3 max-w-5xl mx-auto">
              <button
                 onClick={toggleListening}
@@ -367,7 +475,7 @@ function ChatContent() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your health question here..."
+                placeholder="Ask about Chennai health news, book an appointment, or plan medical support for an event..."
                 className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200 resize-none min-h-[60px] max-h-[160px] text-slate-700 placeholder-slate-400 font-medium scrollbar-hide outline-none"
                 rows={1}
                 disabled={isLoading}
