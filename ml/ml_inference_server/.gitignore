@@ -1,0 +1,75 @@
+# -----------------------------
+# Python
+# -----------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc.*
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python cache
+.mypy_cache/
+.pytest_cache/
+
+# -----------------------------
+# ML Models / Data
+# -----------------------------
+*.pkl
+*.joblib
+*.h5
+*.onnx
+*.pt
+*.pth
+*.ckpt
+
+# datasets
+data/
+datasets/
+outputs/
+
+# -----------------------------
+# Rust
+# -----------------------------
+target/
+Cargo.lock
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+logs/
+
+# -----------------------------
+# OS Files
+# -----------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -----------------------------
+# IDE / Editor
+# -----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -----------------------------
+# Environment variables
+# -----------------------------
+.env
+.env.*
