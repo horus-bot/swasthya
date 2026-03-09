@@ -1,134 +1,108 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import gsap from "gsap";
 import { LayoutDashboard, Tent, Bell, LogOut, Settings } from "lucide-react";
-import { theme } from "@/lib/theme";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const navRef = useRef<HTMLElement | null>(null);
 
-  // ❌ Hide navbar on auth pages
-  if (pathname === "/login") return null;
+  useEffect(() => {
+    if (!navRef.current) {
+      return;
+    }
 
-  const containerStyle = {
-    maxWidth: "1280px",
-    margin: "0 auto",
-    padding: "0 24px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    height: "100%",
-  };
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        "[data-nav-item]",
+        { opacity: 0, y: -12 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.54,
+          stagger: 0.06,
+          ease: "power3.out",
+        }
+      );
+    }, navRef);
 
-  const headerStyle = {
-    width: "100%",
-    height: "64px",
-    backgroundColor: theme.colors.background,
-    borderBottom: `1px solid ${theme.colors.border}`,
-    boxShadow: theme.shadows.sm,
-  };
+    return () => ctx.revert();
+  }, [pathname]);
 
-  const navLinkStyle = {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#475569",
-    textDecoration: "none",
-    transition: "color 0.2s",
+  if (pathname === "/" || pathname === "/login") return null;
+
+  const links = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/camps", label: "Camps", icon: Tent },
+    { href: "/alerts", label: "Alerts", icon: Bell },
+  ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    router.push("/login");
   };
 
   return (
-    <header style={headerStyle}>
-      <div style={containerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: theme.borderRadius.md,
-              overflow: "hidden",
-            }}
-          >
-            <img src="/logo.svg" alt="Manjhi logo" style={{ width: 60, height: 60, objectFit: "contain" }} />
-          </div>
-          <h1
-            style={{
-              fontSize: "20px",
-              fontWeight: "bold",
-              letterSpacing: "-0.5px",
-              color: theme.colors.primaryDark,
-            }}
-          >
-            MANJHI WORKER
-          </h1>
+    <header ref={navRef} className="nav-shell">
+      <div className="nav-brand" data-nav-item>
+        <div className="nav-brand-mark">
+          <img src="/logo.svg" alt="Manjhi logo" style={{ width: 70, height: 70, objectFit: "contain" }} />
+        </div>
+        <div className="nav-brand-copy">
+          <strong>MANJHI WORKER</strong>
+          <span>Frontline operations</span>
+        </div>
+      </div>
+
+      <nav className="nav-links" aria-label="Primary navigation">
+        {links.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname?.startsWith(`${href}/`);
+
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`nav-link${isActive ? " is-active" : ""}`}
+              data-nav-item
+            >
+              <Icon size={18} />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="nav-meta">
+        <div className="nav-status" data-nav-item>
+          <span className="nav-status-dot" />
+          <span>Field network stable</span>
         </div>
 
-        {/* Navigation */}
-        <nav style={{ display: "flex", gap: "32px" }}>
-          <Link href="/dashboard" style={navLinkStyle}>
-            <LayoutDashboard size={18} /> Dashboard
-          </Link>
-          <Link href="/camps" style={navLinkStyle}>
-            <Tent size={18} /> Camps
-          </Link>
-          <Link href="/alerts" style={navLinkStyle}>
-            <Bell size={18} /> Alerts
-          </Link>
-        </nav>
-
-        {/* User Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <div style={{ textAlign: "right" }}>
-            <p
-              style={{
-                fontSize: "14px",
-                fontWeight: 600,
-                color: theme.colors.primaryDark,
-                margin: 0,
-              }}
-            >
-              Priya Sharma
-            </p>
-            <p
-              style={{
-                fontSize: "12px",
-                color: theme.colors.textSecondary,
-                margin: 0,
-              }}
-            >
-              Sr. Field Coordinator
-            </p>
+        <div className="nav-user" data-nav-item>
+          <div className="nav-user-copy">
+            <strong>Priya Sharma</strong>
+            <span>Sr. Field Coordinator</span>
           </div>
-
-          <div
-            style={{
-              height: "32px",
-              width: "1px",
-              backgroundColor: "#e2e8f0",
-            }}
-          />
-
-          <button
-            aria-label="Settings"
-            style={{ padding: "8px", color: theme.colors.textSecondary }}
-          >
-            <Settings size={20} />
-          </button>
-
-          <Link
-            href="/login"
-            aria-label="Logout"
-            style={{ padding: "8px", color: theme.colors.textSecondary }}
-          >
-            <LogOut size={20} />
-          </Link>
+          <div className="nav-avatar">PS</div>
         </div>
+
+        <button aria-label="Settings" className="icon-button" data-nav-item>
+          <Settings size={18} />
+        </button>
+
+        <button
+          type="button"
+          aria-label="Logout"
+          className="icon-button"
+          onClick={handleLogout}
+          data-nav-item
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </header>
   );

@@ -1,37 +1,42 @@
 export const theme = {
   colors: {
-    primary: '#1E3A8A', // Deep Blue
-    primaryDark: '#0A2540', // Darker Blue
-    secondary: '#2563EB', // Medium Blue
-    background: '#FFFFFF',
-    text: '#0A2540',
-    textSecondary: '#64748b', // Slate 500
-    border: '#DBEAFE', // Light Blue
-    success: '#10B981', // Green
-    danger: '#EF4444', // Red
-    warning: '#F59E0B', // Amber
-    
-    // Backgrounds
-    bgLight: '#F8FAFC', // Slate 50
-    bgBlue: '#EFF6FF', // Blue 50
-    bgGreen: '#ECFDF5', // Green 50
-    bgRed: '#FEF2F2', // Red 50
-    bgAmber: '#FFFBEB', // Amber 50
+    primary: '#114C7A',
+    primaryDark: '#10233C',
+    secondary: '#0F9D8A',
+    background: '#EEF4FF',
+    surface: '#FFFFFF',
+    surfaceMuted: '#F5F8FF',
+    text: '#10233C',
+    textSecondary: '#60708A',
+    border: 'rgba(120, 147, 179, 0.24)',
+    success: '#109E6D',
+    danger: '#D84E6C',
+    warning: '#F5A524',
+    info: '#2563EB',
+
+    bgLight: '#F7F9FF',
+    bgBlue: '#EAF3FF',
+    bgGreen: '#EAF9F1',
+    bgRed: '#FEEFF3',
+    bgAmber: '#FFF6E4',
+    bgTeal: '#E7FBF7',
   },
   fonts: {
-    main: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    main: '"Segoe UI Variable", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
   },
   borderRadius: {
     sm: '4px',
     md: '8px',
     lg: '12px',
     xl: '16px',
+    '2xl': '24px',
     full: '9999px',
   },
   shadows: {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    lg: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-    card: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-    floating: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+    sm: '0 10px 24px rgba(16, 35, 60, 0.06)',
+    lg: '0 20px 40px rgba(16, 35, 60, 0.12)',
+    card: '0 18px 42px rgba(17, 76, 122, 0.1)',
+    floating: '0 24px 60px rgba(16, 35, 60, 0.16)',
+    glow: '0 22px 48px rgba(37, 99, 235, 0.2)',
   }
 };

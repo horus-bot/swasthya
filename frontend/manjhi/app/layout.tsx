@@ -2,7 +2,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
-import { theme } from "@/lib/theme";
 
 export const metadata: Metadata = {
   title: "MANJHI WORKER",
@@ -16,32 +15,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ backgroundColor: theme.colors.background }}>
-        {/* Desktop Navbar */}
-        <div
-          className="desktop-only"
-          style={{ position: "sticky", top: 0, zIndex: 100 }}
-        >
-          <Navbar />
-        </div>
+      <body>
+        <div className="manjhi-shell">
+          <div className="shell-backdrop" aria-hidden="true">
+            <div className="shell-orb shell-orb-a" />
+            <div className="shell-orb shell-orb-b" />
+            <div className="shell-orb shell-orb-c" />
+          </div>
 
-        {/* Page Content */}
-        <main style={{ minHeight: "100vh", paddingBottom: "6rem" }}>
-          {children}
-        </main>
+          <div className="desktop-only topbar-host">
+            <Navbar />
+          </div>
 
-        {/* Mobile Bottom Navigation */}
-        <div
-          className="mobile-only"
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-          }}
-        >
-          <BottomNav />
+          <main className="shell-main">{children}</main>
+
+          <div className="mobile-only mobile-dock-host">
+            <BottomNav />
+          </div>
         </div>
       </body>
     </html>
