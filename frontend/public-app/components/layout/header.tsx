@@ -6,6 +6,7 @@ import { Logo } from "../logo";
 import { Menu, X } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import LanguageSwitcher from "../common/LanguageSwitcher";
+import NotificationDropdown from "../common/NotificationDropdown";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -35,8 +36,12 @@ export default function Header() {
           </nav>
 
           {/* Action Button & Mobile Menu Toggle */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 md:space-x-4">
              <LanguageSwitcher />
+             <NotificationDropdown 
+               triggerClass="relative p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-600 transition-all active:scale-95 shadow-sm border border-slate-100 hidden sm:block" 
+               dotBorderColor="border-white" 
+             />
              {/* Emergency Button - Visible on all screens */}
              <Link 
               href="/instructions" 

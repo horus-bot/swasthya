@@ -124,272 +124,300 @@ export default function TrackerPage() {
   };
 
   return (
-    <div className="tracker-page">
-      {/* Header Section */}
-      <div className="tracker-header">
-        <div className="header-content">
-          <h1 className="page-title">Health Tracker</h1>
-          <p className="page-subtitle">
-            Monitor your health metrics and track your wellness journey
-          </p>
-        </div>
-        <div className="header-stats">
-          <div className="quick-stat">
-            <span className="stat-icon">🎯</span>
-            <div className="stat-info">
-              <span className="stat-number">85%</span>
-              <span className="stat-label">Goals Met</span>
-            </div>
+    <div className="min-h-screen bg-slate-50 py-6 md:py-10 px-3 sm:px-6 lg:px-8 font-sans pb-28 md:pb-12">
+      <div className="max-w-5xl mx-auto space-y-6 md:space-y-8">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-8 bg-white p-5 md:p-8 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-48 md:w-80 h-48 md:h-80 bg-indigo-50 rounded-full blur-3xl -mx-10 -my-10 pointer-events-none"></div>
+          
+          <div className="relative z-10 w-full md:w-1/2">
+            <h1 className="text-2xl md:text-4xl font-black text-slate-800 tracking-tight mb-1.5 md:mb-2">Health Tracker</h1>
+            <p className="text-sm md:text-base text-slate-500 font-medium leading-snug">
+              Monitor your health metrics and track your wellness journey
+            </p>
           </div>
-          <div className="quick-stat">
-            <span className="stat-icon">📊</span>
-            <div className="stat-info">
-              <span className="stat-number">6</span>
-              <span className="stat-label">Metrics Tracked</span>
+          
+          <div className="relative z-10 flex gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-3 bg-white p-3 md:p-4 rounded-2xl border border-slate-100 shadow-sm flex-1 md:flex-none">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-emerald-50 flex items-center justify-center text-xl md:text-2xl">🎯</div>
+              <div>
+                <div className="text-lg md:text-xl font-black text-slate-800 leading-none mb-1">85%</div>
+                <div className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Goals Met</div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="tab-navigation">
-        <button 
-          className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          📊 Overview
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'metrics' ? 'active' : ''}`}
-          onClick={() => setActiveTab('metrics')}
-        >
-          📈 Metrics
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          📋 History
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'goals' ? 'active' : ''}`}
-          onClick={() => setActiveTab('goals')}
-        >
-          🎯 Goals
-        </button>
-      </div>
-
-      <div className="tracker-content">
-        {/* Overview Tab */}
-        {activeTab === 'overview' && (
-          <div className="overview-section">
-            <div className="metrics-grid">
-              {healthMetrics.map((metric) => (
-                <div key={metric.id} className="metric-card">
-                  <div className="metric-header">
-                    <div className="metric-icon" style={{background: `${metric.color}20`}}>
-                      {metric.icon}
-                    </div>
-                    <div className="metric-trend" style={{color: getTrendColor(metric.trend)}}>
-                      {getTrendIcon(metric.trend)}
-                    </div>
-                  </div>
-                  <div className="metric-info">
-                    <h3 className="metric-name">{metric.name}</h3>
-                    <div className="metric-value">
-                      <span className="value-number">{metric.value}</span>
-                      <span className="value-unit">{metric.unit}</span>
-                    </div>
-                    <div className="metric-progress">
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill"
-                          style={{
-                            width: `${getProgressPercentage(metric.value, metric.target)}%`,
-                            background: metric.color
-                          }}
-                        ></div>
-                      </div>
-                      <span className="progress-text">
-                        Target: {metric.target} {metric.unit}
-                      </span>
-                    </div>
-                    <div className="metric-timestamp">
-                      Last updated: {metric.lastUpdated}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="daily-summary">
-              <h2 className="section-title">Today's Summary</h2>
-              <div className="summary-cards">
-                <div className="summary-card">
-                  <div className="summary-icon">🏃‍♀️</div>
-                  <div className="summary-content">
-                    <h4>Activity Level</h4>
-                    <p>Moderate - You're doing great!</p>
-                    <div className="summary-progress">
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{width: '75%', background: '#f59e0b'}}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="summary-card">
-                  <div className="summary-icon">🥗</div>
-                  <div className="summary-content">
-                    <h4>Nutrition</h4>
-                    <p>Good hydration, balanced intake</p>
-                    <div className="summary-progress">
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{width: '85%', background: '#10b981'}}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="summary-card">
-                  <div className="summary-icon">😌</div>
-                  <div className="summary-content">
-                    <h4>Wellness</h4>
-                    <p>Excellent sleep quality</p>
-                    <div className="summary-progress">
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{width: '90%', background: '#8b5cf6'}}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex items-center gap-3 bg-white p-3 md:p-4 rounded-2xl border border-slate-100 shadow-sm flex-1 md:flex-none">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-50 flex items-center justify-center text-xl md:text-2xl">📊</div>
+              <div>
+                <div className="text-lg md:text-xl font-black text-slate-800 leading-none mb-1">6</div>
+                <div className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Tracked</div>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Metrics Tab */}
-        {activeTab === 'metrics' && (
-          <div className="metrics-section">
-            <div className="metrics-detailed">
-              {healthMetrics.map((metric) => (
-                <div key={metric.id} className="detailed-metric-card">
-                  <div className="metric-chart-header">
-                    <div className="chart-title">
-                      <span className="chart-icon">{metric.icon}</span>
-                      <h3>{metric.name}</h3>
+        {/* Tab Navigation */}
+        <div className="flex overflow-x-auto no-scrollbar gap-2 md:gap-4 p-1.5 bg-slate-200/50 rounded-2xl border border-slate-200/50 mask-fade-edges">
+          {[
+            { id: 'overview', icon: '📊', label: 'Overview' },
+            { id: 'metrics', icon: '📈', label: 'Metrics' },
+            { id: 'history', icon: '📋', label: 'History' },
+            { id: 'goals', icon: '🎯', label: 'Goals' }
+          ].map(tab => (
+            <button 
+              key={tab.id}
+              className={`flex-shrink-0 flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-bold transition-all text-sm md:text-base ${activeTab === tab.id ? 'bg-white text-indigo-600 shadow-sm border border-slate-100 scale-105 z-10' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <span>{tab.icon}</span> {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6 md:space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+                {healthMetrics.map((metric) => (
+                  <div key={metric.id} className="bg-white rounded-[2rem] p-5 md:p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-white/50" style={{background: `${metric.color}20`}}>
+                        {metric.icon}
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold text-xs" style={{color: getTrendColor(metric.trend), backgroundColor: `${getTrendColor(metric.trend)}15`, borderColor: `${getTrendColor(metric.trend)}30`}}>
+                        {getTrendIcon(metric.trend)}
+                        <span className="capitalize">{metric.trend}</span>
+                      </div>
                     </div>
-                    <div className="chart-value" style={{color: metric.color}}>
-                      {metric.value} {metric.unit}
-                    </div>
-                  </div>
-                  <div className="metric-chart">
-                    <div className="chart-placeholder">
-                      <div className="chart-bars">
-                        {[...Array(7)].map((_, index) => (
+                    
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-500 mb-1">{metric.name}</h3>
+                      <div className="flex items-baseline gap-1.5 mb-4">
+                        <span className="text-3xl font-black text-slate-800 tracking-tight">{metric.value}</span>
+                        <span className="text-sm font-bold text-slate-400">{metric.unit}</span>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                          <span className="text-slate-400">Progress</span>
+                          <span className="text-slate-700">Target: {metric.target} {metric.unit}</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                           <div 
-                            key={index} 
-                            className="chart-bar"
-                            style={{
-                              height: `${Math.random() * 80 + 20}%`,
-                              background: `${metric.color}${Math.floor(Math.random() * 5 + 3)}0`
-                            }}
+                            className="h-full rounded-full transition-all duration-1000 ease-out"
+                            style={{ width: `${getProgressPercentage(metric.value, metric.target)}%`, background: metric.color }}
                           ></div>
-                        ))}
+                        </div>
                       </div>
-                      <div className="chart-labels">
-                        <span>Mon</span>
-                        <span>Tue</span>
-                        <span>Wed</span>
-                        <span>Thu</span>
-                        <span>Fri</span>
-                        <span>Sat</span>
-                        <span>Sun</span>
+                      
+                      <div className="mt-4 pt-4 border-t border-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Updated {metric.lastUpdated}
                       </div>
                     </div>
                   </div>
-                  <div className="metric-actions">
-                    <button className="action-btn">📝 Log Data</button>
-                    <button className="action-btn">📊 View Trends</button>
+                ))}
+              </div>
+
+              <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -mx-20 -my-20 pointer-events-none z-0"></div>
+                <h2 className="text-xl md:text-2xl font-black text-slate-800 mb-6 relative z-10">Today's Summary</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
+                  <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex gap-4 items-start">
+                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-xl flex-shrink-0 shadow-sm border border-amber-200/50">🏃‍♀️</div>
+                    <div className="flex-1">
+                      <h4 className="font-black text-slate-800 text-sm mb-1">Activity Level</h4>
+                      <p className="text-xs font-medium text-slate-500 mb-3">Moderate - You're doing great!</p>
+                      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{width: '75%'}}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex gap-4 items-start">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl flex-shrink-0 shadow-sm border border-emerald-200/50">🥗</div>
+                    <div className="flex-1">
+                      <h4 className="font-black text-slate-800 text-sm mb-1">Nutrition</h4>
+                      <p className="text-xs font-medium text-slate-500 mb-3">Good hydration, balanced</p>
+                      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full" style={{width: '85%'}}></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex gap-4 items-start">
+                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-xl flex-shrink-0 shadow-sm border border-purple-200/50">😌</div>
+                    <div className="flex-1">
+                      <h4 className="font-black text-slate-800 text-sm mb-1">Wellness</h4>
+                      <p className="text-xs font-medium text-slate-500 mb-3">Excellent sleep quality</p>
+                      <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-purple-500 rounded-full" style={{width: '90%'}}></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* History Tab */}
-        {activeTab === 'history' && (
-          <div className="history-section">
-            <div className="history-header">
-              <h2 className="section-title">Health History</h2>
-              <div className="history-filters">
-                <button className="filter-btn active">All</button>
-                <button className="filter-btn">This Week</button>
-                <button className="filter-btn">This Month</button>
               </div>
             </div>
-            <div className="history-timeline">
-              {healthRecords.map((record) => (
-                <div key={record.id} className="history-item">
-                  <div className="history-date">
-                    <div className="date-circle"></div>
-                    <span>{new Date(record.date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="history-content">
-                    <h4 className="history-type">{record.type}</h4>
-                    <p className="history-value">
-                      {record.value} {healthMetrics.find(m => m.name === record.type)?.unit || ''}
-                    </p>
-                    {record.notes && (
-                      <p className="history-notes">{record.notes}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Goals Tab */}
-        {activeTab === 'goals' && (
-          <div className="goals-section">
-            <div className="goals-header">
-              <h2 className="section-title">Health Goals</h2>
-              <button className="add-goal-btn">+ Add Goal</button>
-            </div>
-            <div className="goals-grid">
+          {/* Metrics Tab */}
+          {activeTab === 'metrics' && (
+            <div className="space-y-6 md:space-y-8">
               {healthMetrics.map((metric) => (
-                <div key={metric.id} className="goal-card">
-                  <div className="goal-header">
-                    <span className="goal-icon">{metric.icon}</span>
-                    <h4 className="goal-name">{metric.name}</h4>
-                  </div>
-                  <div className="goal-progress">
-                    <div className="goal-values">
-                      <span className="current-value">Current: {metric.value} {metric.unit}</span>
-                      <span className="target-value">Target: {metric.target} {metric.unit}</span>
+                <div key={metric.id} className="bg-white rounded-[2rem] p-5 md:p-8 border border-slate-100 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8 pb-4 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-white/50" style={{background: `${metric.color}20`}}>
+                        {metric.icon}
+                      </div>
+                      <h3 className="text-lg md:text-xl font-black text-slate-800">{metric.name}</h3>
                     </div>
-                    <div className="goal-progress-bar">
-                      <div 
-                        className="goal-progress-fill"
-                        style={{
-                          width: `${getProgressPercentage(metric.value, metric.target)}%`,
-                          background: metric.color
-                        }}
-                      ></div>
-                    </div>
-                    <div className="goal-percentage">
-                      {Math.round(getProgressPercentage(metric.value, metric.target))}% Complete
+                    <div className="text-2xl md:text-3xl font-black tracking-tight" style={{color: metric.color}}>
+                      {metric.value} <span className="text-sm font-bold text-slate-400">{metric.unit}</span>
                     </div>
                   </div>
-                  <div className="goal-actions">
-                    <button className="goal-action-btn">✏️ Edit</button>
-                    <button className="goal-action-btn">📊 Track</button>
+                  
+                  <div className="h-48 md:h-64 w-full bg-slate-50 rounded-2xl border border-slate-100 p-4 md:p-6 flex flex-col justify-end relative">
+                    <div className="flex items-end justify-between h-full gap-2 md:gap-4 relative z-10 w-full pl-6 md:pl-8">
+                      {/* Fake Chart Bars with Tailwind */}
+                      {[40, 65, 45, 80, 55, 90, metric.value / metric.target * 100].map((h, i) => (
+                        <div key={i} className="w-full flex justify-center group relative h-full items-end">
+                           <div className="absolute opacity-0 group-hover:opacity-100 -top-8 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg transition-opacity whitespace-nowrap z-20">
+                             {h.toFixed(0)} {metric.unit}
+                           </div>
+                           <div 
+                              className="w-full max-w-[40px] rounded-t-lg transition-all duration-500 hover:opacity-80 relative overflow-hidden"
+                              style={{ height: `${Math.min(h, 100)}%`, background: i === 6 ? metric.color : `${metric.color}60` }}
+                           >
+                              <div className="absolute inset-x-0 bottom-0 bg-white/20 h-1/2"></div>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="absolute top-4 left-2 bottom-8 flex flex-col justify-between text-[10px] font-bold text-slate-400">
+                        <span>100</span>
+                        <span>50</span>
+                        <span>0</span>
+                    </div>
+
+                    <div className="flex justify-between mt-3 pt-3 border-t border-slate-200 text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest pl-6 md:pl-8">
+                      <span>Mon</span>
+                      <span>Tue</span>
+                      <span>Wed</span>
+                      <span>Thu</span>
+                      <span>Fri</span>
+                      <span>Sat</span>
+                      <span className="text-slate-800">Sun</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-slate-900/20">
+                      📝 Log Data
+                    </button>
+                    <button className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition-all active:scale-95 border border-slate-200">
+                      📊 View Trends
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* History Tab */}
+          {activeTab === 'history' && (
+            <div className="bg-white rounded-[2.5rem] p-5 md:p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-full blur-3xl -mx-20 -my-20 pointer-events-none z-0"></div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-5 border-b border-slate-100 relative z-10">
+                <h2 className="text-xl md:text-2xl font-black text-slate-800">Health History</h2>
+                <div className="flex bg-slate-100 p-1 rounded-xl">
+                  {['All', 'This Week', 'This Month'].map(f => (
+                    <button key={f} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${f === 'All' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="relative border-l-2 border-slate-100 ml-4 md:ml-6 space-y-8 pb-4 z-10">
+                {healthRecords.map((record) => (
+                  <div key={record.id} className="relative pl-6 md:pl-8">
+                    <div className="absolute -left-[5px] top-1/2 -translate-y-1/2 w-2 h-2 bg-indigo-500 rounded-full shadow-[0_0_0_4px_white,0_0_0_6px_#e2e8f0]"></div>
+                    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 md:p-5 hover:shadow-md transition-all group">
+                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                          📅 {new Date(record.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric'})}
+                       </div>
+                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <h4 className="font-black text-slate-800 text-base md:text-lg">{record.type}</h4>
+                            {record.notes && <p className="text-xs font-medium text-slate-500 mt-1">{record.notes}</p>}
+                          </div>
+                          <div className="text-lg md:text-xl font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors self-start sm:self-auto">
+                            {record.value} <span className="text-[10px] md:text-xs">
+                                {healthMetrics.find(m => m.name === record.type)?.unit || ''}
+                            </span>
+                          </div>
+                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Goals Tab */}
+          {activeTab === 'goals' && (
+            <div className="space-y-6 md:space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 md:p-6 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-full blur-3xl -mx-10 -my-10 pointer-events-none"></div>
+                <h2 className="text-xl md:text-2xl font-black text-slate-800 relative z-10">Health Goals</h2>
+                <button className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all active:scale-95 shadow-lg shadow-emerald-500/20 relative z-10 flex items-center justify-center gap-2 text-sm">
+                  <span>+</span> Add Goal
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                {healthMetrics.map((metric) => (
+                  <div key={metric.id} className="bg-white rounded-[2rem] p-5 md:p-6 border border-slate-100 shadow-sm flex flex-col">
+                    <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-50">
+                      <span className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl border border-slate-100">{metric.icon}</span>
+                      <h4 className="font-black text-slate-800 text-lg">{metric.name}</h4>
+                    </div>
+                    
+                    <div className="flex-grow space-y-4 mb-6">
+                      <div className="flex justify-between items-center text-xs md:text-sm font-bold bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span className="text-slate-600 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-slate-400"></span> Current: {metric.value} {metric.unit}</span>
+                        <span className="text-indigo-600 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-indigo-500"></span> Target: {metric.target} {metric.unit}</span>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-[2px]">
+                          <div 
+                            className="h-full rounded-full transition-all duration-1000 ease-out shadow-sm"
+                            style={{ width: `${getProgressPercentage(metric.value, metric.target)}%`, background: metric.color }}
+                          ></div>
+                        </div>
+                        <div className="text-right text-[10px] font-black uppercase tracking-widest" style={{color: metric.color}}>
+                          {Math.round(getProgressPercentage(metric.value, metric.target))}% Complete
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-slate-50 border-dashed">
+                      <button className="flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl transition-all border border-slate-200 text-xs">
+                        ✏️ Edit
+                      </button>
+                      <button className="flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-slate-900/10 text-xs">
+                        📊 Track
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

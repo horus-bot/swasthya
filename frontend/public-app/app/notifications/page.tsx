@@ -35,7 +35,7 @@ export default function NotificationPage() {
   };
 
   return (
-    <div className="notifications-page-wrapper">
+    <div className="notifications-page-wrapper pb-28 md:pb-12">
       <main className="p-4 sm:p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Health Reminders</h1>
 

@@ -85,7 +85,7 @@ export default function RoutingPage() {
     : null;
 
   return (
-    <main className="p-4 sm:p-6 max-w-6xl mx-auto">
+    <main className="p-4 sm:p-6 max-w-6xl mx-auto pb-28 md:pb-12">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Smart Routing</h1>

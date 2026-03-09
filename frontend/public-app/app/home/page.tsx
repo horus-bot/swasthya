@@ -35,6 +35,7 @@ import {
   Heart
 } from "lucide-react";
 import { fetchParticles, fetchFullArticle } from "@/lib/api";
+import NotificationDropdown from "@/components/common/NotificationDropdown";
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -148,10 +149,10 @@ export default function HomePage() {
           <button className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm border border-white/10">
             <Search size={22} />
           </button>
-          <button className="relative p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm border border-white/10">
-            <Bell size={22} />
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-400 rounded-full border-2 border-[#0E9488]"></span>
-          </button>
+          <NotificationDropdown 
+            triggerClass="relative p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all active:scale-95 shadow-sm border border-white/10" 
+            dotBorderColor="border-[#0E9488]" 
+          />
         </div>
       </header>
 

@@ -1,6 +1,6 @@
 export default function MapPage() {
   return (
-    <main className="p-6">
+    <main className="p-6 pb-28 md:pb-12">
       <h1 className="text-xl font-semibold mb-4">
         Healthcare Map
       </h1>
