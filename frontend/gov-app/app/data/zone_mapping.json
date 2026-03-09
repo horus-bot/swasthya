@@ -1,0 +1,94 @@
+{
+  "zones": [
+    {
+      "zone_no": 1,
+      "zone_label": "I",
+      "zone_name": "Thiruvotriyur",
+      "wards": [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+    },
+    {
+      "zone_no": 2,
+      "zone_label": "II",
+      "zone_name": "Manali",
+      "wards": [15,16,17,18,19,20,21]
+    },
+    {
+      "zone_no": 3,
+      "zone_label": "III",
+      "zone_name": "Madhavaram",
+      "wards": [22,23,24,25,26,27,28,29,30,31,32,33]
+    },
+    {
+      "zone_no": 4,
+      "zone_label": "IV",
+      "zone_name": "Tondiarpet",
+      "wards": [34,35,36,37,38,39,40,41,42,43,44,45,46,47,48]
+    },
+    {
+      "zone_no": 5,
+      "zone_label": "V",
+      "zone_name": "Royapuram",
+      "wards": [49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]
+    },
+    {
+      "zone_no": 6,
+      "zone_label": "VI",
+      "zone_name": "Thiru-Vi-Ka Nagar",
+      "wards": [64,65,66,67,68,69,70,71,72,73,74,75,76,77,78]
+    },
+    {
+      "zone_no": 7,
+      "zone_label": "VII",
+      "zone_name": "Ambattur",
+      "wards": [79,80,81,82,83,84,85,86,87,88,89,90,91,92,93]
+    },
+    {
+      "zone_no": 8,
+      "zone_label": "VIII",
+      "zone_name": "Anna Nagar",
+      "wards": [94,95,96,97,98,99,100,101,102,103,104,105,106,107,108]
+    },
+    {
+      "zone_no": 9,
+      "zone_label": "IX",
+      "zone_name": "Teynampet",
+      "wards": [109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126]
+    },
+    {
+      "zone_no": 10,
+      "zone_label": "X",
+      "zone_name": "Kodambakkam",
+      "wards": [127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142]
+    },
+    {
+      "zone_no": 11,
+      "zone_label": "XI",
+      "zone_name": "Valasaravakkam",
+      "wards": [143,144,145,146,147,148,149,150,151,152,153,154,155]
+    },
+    {
+      "zone_no": 12,
+      "zone_label": "XII",
+      "zone_name": "Alandur",
+      "wards": [156,157,158,159,160,161,162,163,164,165,166,167]
+    },
+    {
+      "zone_no": 13,
+      "zone_label": "XIII",
+      "zone_name": "Adyar",
+      "wards": [170,171,172,173,174,175,176,177,178,179,180,181,182]
+    },
+    {
+      "zone_no": 14,
+      "zone_label": "XIV",
+      "zone_name": "Perungudi",
+      "wards": [168,169,183,184,185,186,187,188,189,190,191]
+    },
+    {
+      "zone_no": 15,
+      "zone_label": "XV",
+      "zone_name": "Sholinganallur",
+      "wards": [192,193,194,195,196,197,198,199,200]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------- BASE -------- */
+body {
+  background-color: #f8fafc; /* slate-50 */
+  color: #0f172a; /* slate-900 */
+}
+
+/* -------- TYPOGRAPHY -------- */
+h1, h2, h3 {
+  color: #0f172a;
+}
+
+.text-muted {
+  color: #475569; /* slate-600 */
+}
+
+/* -------- CARDS -------- */
+.card {
+  @apply bg-white border border-slate-200 rounded-xl shadow-sm;
+}
+
+/* -------- BUTTON -------- */
+.btn {
+  @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition;
+}
+
+/* -------- STATUS -------- */
+.status-ok {
+  @apply bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.status-warn {
+  @apply bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium;
+}
