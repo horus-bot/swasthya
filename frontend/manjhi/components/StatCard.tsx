@@ -15,36 +15,79 @@ interface StatCardProps {
 }
 
 export default function StatCard({ title, value, icon: Icon, trend, trendUp, alert, delay = 0 }: StatCardProps) {
-  const cardRef = useRef(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    gsap.fromTo(cardRef.current, 
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.5, delay: delay, ease: "power2.out" }
-    );
-  }, [delay]);
+    if (!cardRef.current) {
+      return;
+    }
 
-  const style = {
-      backgroundColor: theme.colors.background,
-      border: `1px solid ${theme.colors.border}`,
-      borderRadius: theme.borderRadius.lg,
-      padding: '16px',
-      boxShadow: theme.shadows.sm,
-      borderLeftWidth: alert ? '4px' : '1px',
-      borderLeftColor: alert ? theme.colors.danger : theme.colors.border
-  }
+    const card = cardRef.current;
+    const icon = card.querySelector("[data-stat-icon]");
+
+    gsap.set(card, { clearProps: "transform" });
+    gsap.set(icon, { clearProps: "transform" });
+
+    const enter = () => {
+      gsap.to(card, {
+        y: -6,
+        duration: 0.24,
+        ease: "power2.out",
+        boxShadow: theme.shadows.card,
+      });
+      gsap.to(icon, { rotate: -8, scale: 1.08, duration: 0.24, ease: "power2.out" });
+    };
+
+    const leave = () => {
+      gsap.to(card, { y: 0, duration: 0.24, ease: "power2.out", boxShadow: theme.shadows.sm });
+      gsap.to(icon, { rotate: 0, scale: 1, duration: 0.24, ease: "power2.out" });
+    };
+
+    card.addEventListener("mouseenter", enter);
+    card.addEventListener("mouseleave", leave);
+
+    return () => {
+      card.removeEventListener("mouseenter", enter);
+      card.removeEventListener("mouseleave", leave);
+    };
+  }, [alert, delay]);
 
   return (
-    <div ref={cardRef} style={style}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 500, color: '#64748b' }}>{title}</p>
-        {Icon && <Icon size={18} style={{ color: '#94a3b8' }} />}
+    <div
+      ref={cardRef}
+      className="panel-surface motion-card reveal-item"
+      data-dashboard-item
+      style={{
+        padding: "18px",
+        borderLeft: alert ? `4px solid ${theme.colors.danger}` : `1px solid ${theme.colors.border}`,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+        <p style={{ fontSize: "13px", fontWeight: 700, color: theme.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em" }}>{title}</p>
+        {Icon ? (
+          <div
+            data-stat-icon
+            style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: alert ? theme.colors.bgRed : theme.colors.bgBlue,
+              color: alert ? theme.colors.danger : theme.colors.primary,
+            }}
+          >
+            <Icon size={18} />
+          </div>
+        ) : null}
       </div>
       
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px' }}>
         <h3 style={{ 
-            fontSize: '24px', 
-            fontWeight: 'bold', 
+            fontSize: '30px', 
+            fontWeight: 800,
+            letterSpacing: '-0.04em',
             color: alert ? theme.colors.danger : theme.colors.primaryDark 
         }}>
           {value}
@@ -53,8 +96,8 @@ export default function StatCard({ title, value, icon: Icon, trend, trendUp, ale
         {trend && (
             <span style={{ 
                 fontSize: '12px', 
-                fontWeight: 500, 
-                padding: '2px 8px', 
+              fontWeight: 700,
+              padding: '6px 10px', 
                 borderRadius: '999px',
                 backgroundColor: trendUp ? theme.colors.bgGreen : theme.colors.bgRed,
                 color: trendUp ? theme.colors.success : theme.colors.danger

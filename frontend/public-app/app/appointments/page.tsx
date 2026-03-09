@@ -1,6 +1,5 @@
 "use client";
 import { useState } from 'react';
-import { bookAppointment } from '../lib/api/appointments.service';
 import './page.css';
 
 interface FormData {
@@ -14,6 +13,48 @@ interface FormData {
   doctor: string;
   symptoms: string;
   emergencyContact: string;
+}
+
+export interface CreateAppointmentInput {
+  hospital_id?: string | null;
+  name: string;
+  email: string;
+  phone: string;
+  d_o_birth: string;
+  emergency_contact?: string | null;
+  depart: string;
+  preferred_doc: string;
+  appointment_date: string;
+  preferred_time: string;
+  symptoms?: string | null;
+}
+
+export async function bookAppointment(input: CreateAppointmentInput) {
+  const payload = {
+    name: input.name,
+    email: input.email,
+    phone: input.phone,
+    d_o_birth: input.d_o_birth,
+    emergency_contact: input.emergency_contact ?? null,
+    depart: input.depart,
+    preferred_doc: input.preferred_doc,
+    appointment_date: input.appointment_date,
+    preferred_time: input.preferred_time,
+    symptoms: input.symptoms ?? null,
+    status: "pending",
+  };
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .insert([payload])
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 }
 
 export default function AppointmentsPage() {

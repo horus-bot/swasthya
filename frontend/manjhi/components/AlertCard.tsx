@@ -16,13 +16,40 @@ interface AlertCardProps {
 }
 
 export default function AlertCard({ type, title, message, time, delay = 0 }: AlertCardProps) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    gsap.fromTo(ref.current,
-      { opacity: 0, x: -10 },
-      { opacity: 1, x: 0, duration: 0.4, delay: delay, ease: "power2.out" }
-    );
+    if (!ref.current) {
+      return;
+    }
+
+    const node = ref.current;
+
+    const enter = () => {
+      gsap.to(node, {
+        y: -4,
+        duration: 0.24,
+        ease: "power2.out",
+        boxShadow: theme.shadows.card,
+      });
+    };
+
+    const leave = () => {
+      gsap.to(node, {
+        y: 0,
+        duration: 0.24,
+        ease: "power2.out",
+        boxShadow: theme.shadows.sm,
+      });
+    };
+
+    node.addEventListener("mouseenter", enter);
+    node.addEventListener("mouseleave", leave);
+
+    return () => {
+      node.removeEventListener("mouseenter", enter);
+      node.removeEventListener("mouseleave", leave);
+    };
   }, [delay]);
 
   const getStyles = (type: AlertType) => {
@@ -52,19 +79,20 @@ export default function AlertCard({ type, title, message, time, delay = 0 }: Ale
   const Icon = type === 'critical' ? AlertCircle : type === 'safe' ? CheckCircle2 : Info;
 
   const cardStyle = {
-      padding: '16px',
-      borderRadius: '0 12px 12px 0',
+      padding: '18px',
+      borderRadius: '20px',
       boxShadow: theme.shadows.sm,
       marginBottom: '12px',
       display: 'flex',
       gap: '12px',
       backgroundColor: bg,
       borderLeft: `4px solid ${border}`,
-      color: text
+      color: text,
+      border: `1px solid ${theme.colors.border}`,
   };
 
   return (
-    <div ref={ref} style={cardStyle}>
+    <div ref={ref} style={cardStyle} className="motion-card reveal-item alert-feed-card">
       <Icon style={{ flexShrink: 0, marginTop: '2px', color: iconColor }} size={20} />
       <div style={{ flex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
