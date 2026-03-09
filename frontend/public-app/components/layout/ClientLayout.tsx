@@ -31,7 +31,7 @@ export default function ClientLayout({
         </main>
 
         {!hideLayout && <Footer />}
-        <BottomNav />
+        {pathname !== "/" && <BottomNav />}
       </body>
     </LanguageProvider>
   );
