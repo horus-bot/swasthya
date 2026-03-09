@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Head from "next/head";
 import Header from "./header";
 import Footer from "./footer";
 import BottomNav from "./BottomNav";
@@ -19,18 +18,10 @@ export default function ClientLayout({
 
   return (
     <LanguageProvider>
-      <Head>
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        />
-        <link rel="manifest" href="/manifest.webmanifest" />
-        <meta name="theme-color" content="#0f172a" />
-      </Head>
-      <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col overflow-x-hidden">
+      <div className="bg-gray-50 text-gray-900 min-h-screen flex flex-col overflow-x-hidden">
         {!hideLayout && <Header />}
 
-        <main className={`flex-grow w-full h-full flex flex-col ${!hideLayout ? 'pt-16' : ''}`}>
+        <main className={`grow w-full h-full flex flex-col ${!hideLayout ? 'pt-16' : ''}`}>
           {children}
         </main>
 
@@ -38,7 +29,7 @@ export default function ClientLayout({
         {pathname !== "/" && <BottomNav />}
         <ServiceWorkerRegister />
         <PWAInstallPrompt />
-      </body>
+      </div>
     </LanguageProvider>
   );
 }

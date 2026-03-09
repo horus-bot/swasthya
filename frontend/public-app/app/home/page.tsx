@@ -2,7 +2,6 @@
 
 import React, { useRef, useLayoutEffect, useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -14,7 +13,6 @@ import {
   User,
   Bell,
   FileText,
-  MessageSquare,
   ArrowRight,
   Stethoscope,
   AlertTriangle,
@@ -36,6 +34,7 @@ import {
 } from "lucide-react";
 import { fetchParticles, fetchFullArticle } from "@/lib/api";
 import NotificationDropdown from "@/components/common/NotificationDropdown";
+import ChatbotButton from "@/components/ChatbotButton";
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -43,7 +42,6 @@ if (typeof window !== "undefined") {
 }
 
 export default function HomePage() {
-  const router = useRouter();
   const mainRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -284,12 +282,7 @@ export default function HomePage() {
       </main>
 
       {/* FLOATING ACTION BUTTON */}
-      <button
-        onClick={() => router.push('/chatbox')}
-        className="floating-fab fixed bottom-24 right-6 w-16 h-16 bg-[#0E9488] text-white rounded-full flex items-center justify-center shadow-2xl shadow-teal-500/40 hover:scale-110 active:scale-95 transition-all z-40 border-4 border-white"
-      >
-        <MessageSquare size={28} />
-      </button>
+      <ChatbotButton />
 
       {/* ARTICLE MODAL (from previous design) */}
       {selectedArticle && (
