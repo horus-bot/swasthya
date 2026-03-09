@@ -9,7 +9,7 @@ export interface KPI {
   trend: number; // percentage
   trendDir: 'up' | 'down' | 'neutral';
   status: Severity;
-}
+}//haha
 
 export interface Facility {
   id: string;
