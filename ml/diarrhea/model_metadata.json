@@ -1,0 +1,48 @@
+{
+  "features": [
+    "year",
+    "month",
+    "zone_id",
+    "zone_encoded",
+    "rainfall_mm",
+    "temperature_c",
+    "water_quality_index",
+    "sanitation_index",
+    "prev_month_cases_log"
+  ],
+  "ranges": {
+    "rainfall_mm": {
+      "min": 0.01,
+      "max": 798.75,
+      "mean": 108.11926666666666
+    },
+    "temperature_c": {
+      "min": 24.06,
+      "max": 41.0,
+      "mean": 30.168705555555555
+    },
+    "water_quality_index": {
+      "min": 10.0,
+      "max": 94.32,
+      "mean": 61.71774444444445
+    },
+    "sanitation_index": {
+      "min": 55.0,
+      "max": 90.0,
+      "mean": 73.66666666666667
+    },
+    "prev_month_cases": {
+      "min": 3.0,
+      "max": 930.0,
+      "mean": 144.18666666666667
+    },
+    "cases": {
+      "min": 3.0,
+      "max": 930.0,
+      "mean": 144.48444444444445
+    }
+  },
+  "caps": {
+    "prev_month_cases": 778.06
+  }
+}
